@@ -16,32 +16,16 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VECTORVALUE_H
-#define VECTORVALUE_H
+#ifndef QROTATEMODULE_H
+#define QROTATEMODULE_H
 
-#include <QList>
-#include "value.h"
-#include "point.h"
+#include "module.h"
 
-class VectorValue : public Value
+class QRotateModule : public Module
 {
 public:
-	VectorValue(QList<Value*>);
-	QString getValueString() const;
-	bool isTrue() const;
-	VectorValue* toVector(int);
-	Value* toNumber();
-	Point getPoint() const;
-	Iterator<Value*>* createIterator();
-	virtual QList<Value*> getChildren();
-	void toQuaternion(decimal&,decimal&,decimal&,decimal&);
-protected:
-	VectorValue();
-	Value* operation(Expression::Operator_e);
-	Value* operation(Value&,Expression::Operator_e);
-private:
-	Expression::Operator_e convertOperation(Expression::Operator_e);
-	QList<Value*> children;
+	QRotateModule();
+	Node* evaluate(Context*);
 };
 
-#endif // VECTORVALUE_H
+#endif // QROTATEMODULE_H

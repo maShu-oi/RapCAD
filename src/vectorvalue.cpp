@@ -87,6 +87,24 @@ Point VectorValue::getPoint() const
 	return Point(x,y,z);
 }
 
+void VectorValue::toQuaternion(decimal &w,decimal &x,decimal &y,decimal &z)
+{
+	if(children.size()>3) {
+		NumberValue* nw=dynamic_cast<NumberValue*>(children.at(0));
+		NumberValue* nx=dynamic_cast<NumberValue*>(children.at(1));
+		NumberValue* ny=dynamic_cast<NumberValue*>(children.at(2));
+		NumberValue* nz=dynamic_cast<NumberValue*>(children.at(3));
+		if(nw&&nx&&ny&&nz) {
+			w=nw->getNumber();
+			x=nx->getNumber();
+			y=ny->getNumber();
+			z=nz->getNumber();
+			return;
+		}
+	}
+	x=y=z=w=0;
+}
+
 Iterator<Value*>* VectorValue::createIterator()
 {
 	return new VectorIterator(this->children);

@@ -65,6 +65,7 @@
 #include "module/radialsmodule.h"
 #include "module/volumesmodule.h"
 #include "module/triangulatemodule.h"
+#include "module/qrotatemodule.h"
 
 #include "function/lengthfunction.h"
 #include "function/sqrtfunction.h"
@@ -135,6 +136,7 @@ BuiltinCreator::BuiltinCreator(QTextStream& output)
 	builtins.append(new PolylineModule());
 	builtins.append(new PrismModule());
 	builtins.append(new ProjectionModule());
+	builtins.append(new QRotateModule());
 	builtins.append(new RadialsModule());
 	builtins.append(new ResizeModule());
 	builtins.append(new RotateExtrudeModule());
