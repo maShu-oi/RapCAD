@@ -24,9 +24,10 @@
 #include <CGAL/Nef_S2/OGL_base_object.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Nef_3/SNC_decorator.h>
-#include <qgl.h>
-#include <CGAL/glu.h>
+//#include <CGAL/glu.h>
 #include <cstdlib>
+
+#include <QOpenGLFunctions_1_0>
 
 #define CGAL_NEF3_MARKED_VERTEX_COLOR 183,232,92
 #define CGAL_NEF3_MARKED_EDGE_COLOR 171,216,86
@@ -229,10 +230,10 @@ namespace OGL {
   { glEnd(); }
 
   inline void CGAL_GLU_TESS_CALLBACK errorCallback(GLenum errorCode)
-  { const GLubyte *estring;
+  { /*const GLubyte *estring;
     estring = gluErrorString(errorCode);
     fprintf(stderr, "Tessellation Error: %s\n", estring);
-    std::exit (0);
+	std::exit (0);*/
   }
 
   inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid* vertex,
@@ -264,7 +265,8 @@ namespace OGL {
  enum { SNC_AXES};
  enum { SNC_BOUNDARY, SNC_SKELETON };
 
- class Polyhedron : public OGL_base_object {
+ class Polyhedron : public OGL_base_object, protected QOpenGLFunctions_1_0
+ {
  protected:
     std::list<DPoint>    vertices_;
     std::list<DSegment>  edges_;
@@ -371,7 +373,7 @@ namespace OGL {
         return 10;
     }
 
-    void draw(Vertex_iterator v) const {
+	void draw(Vertex_iterator v) {
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
       float p = getVertexSize();
       if(p==0) return;
@@ -400,7 +402,7 @@ namespace OGL {
         return 5;
     }
 
-    void draw(Edge_iterator e) const {
+	void draw(Edge_iterator e) {
       //      CGAL_NEF_TRACEN("drawing edge "<<*e);
       float w = getEdgeSize();
       if(w==0) return;
@@ -422,9 +424,9 @@ namespace OGL {
 	return c;
     }
 
-    void draw(Halffacet_iterator f) const {
+	void draw(Halffacet_iterator f) {
       //      CGAL_NEF_TRACEN("drawing facet "<<(f->debug(),""));
-      GLUtesselator* tess_ = gluNewTess();
+	  /*GLUtesselator* tess_ = gluNewTess();
       gluTessCallback(tess_, GLenum(GLU_TESS_VERTEX_DATA),
 		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &vertexCallback);
       gluTessCallback(tess_, GLenum(GLU_TESS_COMBINE),
@@ -437,17 +439,17 @@ namespace OGL {
 		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &errorCallback);
       gluTessProperty(tess_, GLenum(GLU_TESS_WINDING_RULE),
 		      GLU_TESS_WINDING_POSITIVE);
-
+*/
       DFacet::Coord_const_iterator cit;
       CGAL::Color c = getFacetColor(f->mark());
       glColor3ub(c.red(),c.green(),c.blue());
-      gluTessBeginPolygon(tess_,f->normal());
+	  //gluTessBeginPolygon(tess_,f->normal());
       //      CGAL_NEF_TRACEN(" ");
       //      CGAL_NEF_TRACEN("Begin Polygon");
-      gluTessNormal(tess_,f->dx(),f->dy(),f->dz());
+	  //gluTessNormal(tess_,f->dx(),f->dy(),f->dz());
       // forall facet cycles of f:
       for(unsigned i = 0; i < f->number_of_facet_cycles(); ++i) {
-        gluTessBeginContour(tess_);
+		//gluTessBeginContour(tess_);
 	//	CGAL_NEF_TRACEN("  Begin Contour");
 	// put all vertices in facet cycle into contour:
 	for(cit = f->facet_cycle_begin(i);
@@ -456,18 +458,18 @@ namespace OGL {
           loc[0]=(*cit)[0];
           loc[1]=(*cit)[1];
           loc[2]=(*cit)[2];
-	  gluTessVertex(tess_, loc, *cit);
+	  //gluTessVertex(tess_, loc, *cit);
 	  //	  CGAL_NEF_TRACEN("    add Vertex");
 	}
-        gluTessEndContour(tess_);
+		//gluTessEndContour(tess_);
 	//	CGAL_NEF_TRACEN("  End Contour");
       }
-      gluTessEndPolygon(tess_);
+	  //gluTessEndPolygon(tess_);
       //      CGAL_NEF_TRACEN("End Polygon");
-      gluDeleteTess(tess_);
+	  //gluDeleteTess(tess_);
     }
 
-    void construct_axes() const
+	void construct_axes()
     {
       glLineWidth(2.0);
       // red x-axis
@@ -528,6 +530,7 @@ namespace OGL {
 
     void init() {
       if (init_) return;
+	  initializeOpenGLFunctions();
       init_ = true;
       switches[SNC_AXES] = false;
       style = SNC_BOUNDARY;
@@ -536,8 +539,10 @@ namespace OGL {
       fill_display_lists();
     }
 
+	void draw() const
+	{}
 
-    void draw() const
+	void draw()
     {
       if (!is_initialized()) const_cast<Polyhedron&>(*this).init();
       float l = (std::max)( (std::max)( bbox().xmax() - bbox().xmin(),
