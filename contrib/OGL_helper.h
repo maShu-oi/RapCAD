@@ -21,13 +21,20 @@
 #ifndef CGAL_NEF_OPENGL_HELPER_H
 #define CGAL_NEF_OPENGL_HELPER_H
 
+#include <QtGlobal>
+#define REQUIRED QT_VERSION_CHECK(5, 4, 0)
+
 #include <CGAL/Nef_S2/OGL_base_object.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Nef_3/SNC_decorator.h>
 #include <CGAL/glu.h>
 #include <cstdlib>
 
+#if (QT_VERSION >= REQUIRED)
 #include <QOpenGLFunctions_1_0>
+#else
+#include <qgl.h>
+#endif
 
 #define CGAL_NEF3_MARKED_VERTEX_COLOR 183,232,92
 #define CGAL_NEF3_MARKED_EDGE_COLOR 171,216,86
@@ -265,7 +272,10 @@ namespace OGL {
  enum { SNC_AXES};
  enum { SNC_BOUNDARY, SNC_SKELETON };
 
- class Polyhedron : public OGL_base_object, protected QOpenGLFunctions_1_0
+ class Polyhedron : public OGL_base_object
+#if (QT_VERSION >= REQUIRED)
+		 ,protected QOpenGLFunctions_1_0
+#endif
  {
  protected:
     std::list<DPoint>    vertices_;
@@ -530,7 +540,9 @@ namespace OGL {
 
     void init() {
       if (init_) return;
+#if (QT_VERSION >= REQUIRED)
 	  initializeOpenGLFunctions();
+#endif
       init_ = true;
       switches[SNC_AXES] = false;
       style = SNC_BOUNDARY;
