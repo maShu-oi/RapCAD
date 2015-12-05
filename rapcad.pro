@@ -92,7 +92,9 @@ win32 {
 	LIBS += -L/opt/local/lib -lboost_thread-mt
 	QMAKE_MOC = $$[QT_INSTALL_BINS]\\moc -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED
   } else {
-	LIBS += -lboost_thread -lGLU
+	LIBS += -lboost_thread
+	LIBS += -lboost_system
+	LIBS += -lGLU
   }
 }
 
@@ -559,7 +561,17 @@ HEADERS  += \
 	src/stringify.h \
 	src/cachemanager.h \
 	src/cache.h \
-	src/cgalcache.h
+	src/cgalcache.h \
+    contrib/Boolean_Operations_Definitions.h \
+    contrib/Boolean_Operations_Items.h \
+    contrib/Boolean_Operations_triangulation.h \
+    contrib/BoolPolyhedra.h \
+    contrib/CPolyhedron_from_polygon_builder_3.h \
+    contrib/polyhedron.h \
+    contrib/polyhedron_enriched_polyhedron.h \
+    contrib/Boolean_Operations_Polyhedron.h \
+    contrib/Polyhedron_Copy.h \
+    contrib/Polyhedron_Builder.h
 
 FORMS += \
 	src/mainwindow.ui \
