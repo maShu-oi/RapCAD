@@ -56,7 +56,7 @@
 #include "node/discretenode.h"
 #include "cachemanager.h"
 
-#include "contrib/BoolPolyhedra.h"
+#include "contrib/Boolean_operations.h"
 
 class NodeEvaluator : public NodeVisitor
 {
