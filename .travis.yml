@@ -1,4 +1,7 @@
 sudo: false
+branches:
+  except:
+    - MEPP-integration
 language: cpp
 compiler:
   - gcc
