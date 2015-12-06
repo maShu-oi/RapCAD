@@ -1,0 +1,4 @@
+difference() {
+sphere(10,$fn=100);
+translate([0,0,5])sphere(10,$fn=100);
+}

@@ -52,7 +52,7 @@ Primitive* NodeEvaluator::createPrimitive()
 void NodeEvaluator::visit(PrimitiveNode* n)
 {
 	Primitive* cp=n->getPrimitive();
-	result=cache->fetch(cp);
+	result=cp;//cache->fetch(cp);
 }
 
 void NodeEvaluator::visit(PolylineNode* n)
@@ -591,7 +591,7 @@ void NodeEvaluator::visit(SliceNode* n)
 	const CGAL::Scalar& xmax=b.xmax();
 	const CGAL::Scalar& ymax=b.ymax();
 
-	CGALBuilder bd(cp);
+	CGALBuilder<CGAL::Polyhedron3> bd(cp);
 	bd.makeSideZ(xmin,xmax,ymin,ymax,h);
 
 	decimal t=n->getThickness();

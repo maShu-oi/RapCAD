@@ -182,7 +182,6 @@ SOURCES += \
 	src/nodeevaluator.cpp \
 	src/texteditiodevice.cpp \
 	src/backgroundworker.cpp \
-	src/cgalbuilder.cpp \
 	src/node/differencenode.cpp \
 	src/node/unionnode.cpp \
 	src/module/unionmodule.cpp \

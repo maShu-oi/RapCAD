@@ -11,6 +11,10 @@
 #include "onceonly.h"
 #include "rmath.h"
 
+#include "QElapsedTimer"
+#include "contrib/Boolean_operations.h"
+#include "contrib/Copy_polyhedron_to.h"
+
 CGAL::NefPolyhedron3* CGALPrimitive::singlePoint=NULL;
 
 void CGALPrimitive::init()
@@ -49,7 +53,7 @@ void CGALPrimitive::buildPrimitive()
 
 	switch(type) {
 	case Primitive::Volume: {
-		CGALBuilder b(this);
+		CGALBuilder<CGAL::Polyhedron3> b(this);
 		CGAL::Polyhedron3 poly;
 		poly.delegate(b);
 		nefPolyhedron=new CGAL::NefPolyhedron3(poly);
@@ -228,6 +232,32 @@ Primitive* CGALPrimitive::combine()
 	return this;
 }
 
+static MEPP_Polyhedron* buildMeppPrimitive(CGALPrimitive* other)
+{
+	CGALBuilder<MEPP_Polyhedron> b(other);
+	MEPP_Polyhedron* p=new MEPP_Polyhedron();
+	p->delegate(b);
+	return p;
+}
+
+static CGAL::NefPolyhedron3* boolOperation(CGALPrimitive* left,CGALPrimitive* right, Bool_Op op)
+{
+	MEPP_Polyhedron* mp1=buildMeppPrimitive(left);
+	MEPP_Polyhedron* mp2=buildMeppPrimitive(right);
+
+	QElapsedTimer t;
+	MEPP_Polyhedron* res=new MEPP_Polyhedron();
+	t.start();
+	BoolPolyhedra operation(mp1,mp2,res,op);
+	std::cout << "Took: " << t.elapsed() << std::endl;
+
+	CGAL::Polyhedron3 p3;
+	Copy_polyhedron_to<MEPP_Polyhedron,CGAL::Polyhedron3> b3(*res);
+	p3.delegate(b3);
+
+	return new CGAL::NefPolyhedron3(p3);
+}
+
 Primitive* CGALPrimitive::join(Primitive* pr)
 {
 	CGALPrimitive* that=dynamic_cast<CGALPrimitive*>(pr);
@@ -235,9 +265,7 @@ Primitive* CGALPrimitive::join(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	this->buildPrimitive();
-	that->buildPrimitive();
-	*nefPolyhedron=nefPolyhedron->join(*that->nefPolyhedron);
+	nefPolyhedron=boolOperation(this,that,UNION);
 	this->appendChild(that);
 	return this;
 }
@@ -249,9 +277,7 @@ Primitive* CGALPrimitive::intersection(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	this->buildPrimitive();
-	that->buildPrimitive();
-	*nefPolyhedron=nefPolyhedron->intersection(*that->nefPolyhedron);
+	nefPolyhedron=boolOperation(this,that,INTER);
 	this->appendChild(that);
 	return this;
 }
@@ -263,9 +289,7 @@ Primitive* CGALPrimitive::difference(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	this->buildPrimitive();
-	that->buildPrimitive();
-	*nefPolyhedron=nefPolyhedron->difference(*that->nefPolyhedron);
+	nefPolyhedron=boolOperation(this,that,MINUS);
 	this->appendChild(that);
 	return this;
 }
@@ -300,7 +324,7 @@ Primitive* CGALPrimitive::minkowski(Primitive* pr)
 
 Primitive* CGALPrimitive::inset(const decimal amount)
 {
-	CGALBuilder b(this);
+	CGALBuilder<CGAL::Polyhedron3> b(this);
 	CGALPrimitive* result=b.buildOffsetPolygons(amount);
 	return result;
 }
@@ -321,7 +345,7 @@ Primitive* CGALPrimitive::complement()
 
 Primitive* CGALPrimitive::triangulate()
 {
-	CGALBuilder b(this);
+	CGALBuilder<CGAL::Polyhedron3> b(this);
 	return b.triangulate();
 }
 

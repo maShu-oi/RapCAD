@@ -80,8 +80,9 @@ public:
 private:
 	void init();
 	void buildPrimitive();
-	QList<Primitive*> children;
 	CGAL::NefPolyhedron3* createPolyline(QVector<CGAL::Point3> pl);
+
+	QList<Primitive*> children;
 	QList<CGAL::Point3> points;
 	QList<CGALPolygon*> polygons;
 	CGAL::NefPolyhedron3* nefPolyhedron;

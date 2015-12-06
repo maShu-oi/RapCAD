@@ -11,27 +11,10 @@
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_traits.h>
 
-#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polyhedron_3.h>
-// kernel
-//#define _KERNEL_EXACT_
 
-#ifdef _KERNEL_EXACT_
-#include <CGAL/Gmpq.h>
-#include <CGAL/Lazy_exact_nt.h>
-
-typedef CGAL::Gmpq												CGAL_Gmpq;
-typedef CGAL::Lazy_exact_nt<CGAL_Gmpq>							EX_MM_Number_type;
-typedef CGAL::Simple_cartesian<EX_MM_Number_type>				Enriched_kernel;
-
-#define KERNEL QObject::tr("(kernel: Lazy_exact_nt)")
-#else
-typedef double													number_type;
-typedef CGAL::Simple_cartesian<number_type>						Enriched_kernel;
-
-#define KERNEL QObject::tr("(kernel: double)")
-#endif
-// kernel
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+typedef CGAL::Exact_predicates_exact_constructions_kernel Enriched_kernel;
 
 using namespace std;
 
@@ -937,8 +920,10 @@ public:
 	 * \param p : The point to convert
 	 * \return The 3d point converted
 	 */
-	
-        inline Point_3 to_K(Enriched_kernel::Point_3 p) {return Point_3((FT)p.x(), (FT)p.y(), (FT)p.z());}  // MT: suppression référence
+	inline Point_3 to_K(Enriched_kernel::Point_3 p)
+	{
+		return Point_3(to_double(p.x()),to_double(p.y()),to_double(p.z()));
+	}  // MT: suppression référence
 
 private:
 	/*! \brief The handle of the facet used to build the triangle*/
