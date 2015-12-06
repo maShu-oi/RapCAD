@@ -242,20 +242,32 @@ static MEPP_Polyhedron* buildMeppPrimitive(CGALPrimitive* other)
 
 static CGAL::NefPolyhedron3* boolOperation(CGALPrimitive* left,CGALPrimitive* right, Bool_Op op)
 {
-	MEPP_Polyhedron* mp1=buildMeppPrimitive(left);
-	MEPP_Polyhedron* mp2=buildMeppPrimitive(right);
-
 	QElapsedTimer t;
-	MEPP_Polyhedron* res=new MEPP_Polyhedron();
-	t.start();
-	BoolPolyhedra operation(mp1,mp2,res,op);
-	std::cout << "Took: " << t.elapsed() << std::endl;
 
+	t.start();
+	MEPP_Polyhedron* mp1=buildMeppPrimitive(left);
+	std::cout << "Build left took: " << t.elapsed() << "ms" << std::endl;
+
+	t.start();
+	MEPP_Polyhedron* mp2=buildMeppPrimitive(right);
+	std::cout << "Build right took: " << t.elapsed() << "ms" << std::endl;
+
+	t.start();
+	MEPP_Polyhedron* res=new MEPP_Polyhedron();
+	BoolPolyhedra operation(mp1,mp2,res,op);
+	std::cout << "Operation took: " << t.elapsed() << "ms" << std::endl;
+
+	t.start();
 	CGAL::Polyhedron3 p3;
 	Copy_polyhedron_to<MEPP_Polyhedron,CGAL::Polyhedron3> b3(*res);
 	p3.delegate(b3);
+	std::cout << "Convertion between kernels: " << t.elapsed() << "ms" << std::endl;
 
-	return new CGAL::NefPolyhedron3(p3);
+	t.start();
+	CGAL::NefPolyhedron3* nef=new CGAL::NefPolyhedron3(p3);
+	std::cout << "Convertion to nef took: " << t.elapsed() << "ms" << std::endl;
+
+	return nef;
 }
 
 Primitive* CGALPrimitive::join(Primitive* pr)
