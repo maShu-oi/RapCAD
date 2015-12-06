@@ -66,7 +66,7 @@ class Enriched_vertex :
 {
 	public:
 		VertexId Label;
-
+		Enriched_vertex(){}
 		Enriched_vertex(const P& pt) : CGAL::HalfedgeDS_vertex_base<Refs, T, P>(pt)
 		{
 			this->point() = pt;
