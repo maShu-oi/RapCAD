@@ -77,6 +77,7 @@ public:
 	void discrete(int);
 	CGAL::Circle3 getRadius();
 	CGALVolume getVolume(bool);
+	void* polyhedron;
 private:
 	void init();
 	void buildPrimitive();

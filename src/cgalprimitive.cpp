@@ -21,6 +21,7 @@ void CGALPrimitive::init()
 {
 	nUnion=NULL;
 	type=Primitive::Volume;
+	polyhedron=NULL;
 }
 
 CGALPrimitive::CGALPrimitive()
@@ -234,13 +235,16 @@ Primitive* CGALPrimitive::combine()
 
 static MEPP_Polyhedron* buildMeppPrimitive(CGALPrimitive* other)
 {
+	if(other->polyhedron)
+		return static_cast<MEPP_Polyhedron*>(other->polyhedron);
+
 	CGALBuilder<MEPP_Polyhedron> b(other);
 	MEPP_Polyhedron* p=new MEPP_Polyhedron();
 	p->delegate(b);
 	return p;
 }
 
-static CGAL::NefPolyhedron3* boolOperation(CGALPrimitive* left,CGALPrimitive* right, Bool_Op op)
+static MEPP_Polyhedron* boolOperation(CGALPrimitive* left,CGALPrimitive* right, Bool_Op op)
 {
 	QElapsedTimer t;
 
@@ -257,17 +261,7 @@ static CGAL::NefPolyhedron3* boolOperation(CGALPrimitive* left,CGALPrimitive* ri
 	BoolPolyhedra operation(mp1,mp2,res,op);
 	std::cout << "Operation took: " << t.elapsed() << "ms" << std::endl;
 
-	t.start();
-	CGAL::Polyhedron3 p3;
-	Copy_polyhedron_to<MEPP_Polyhedron,CGAL::Polyhedron3> b3(*res);
-	p3.delegate(b3);
-	std::cout << "Convertion between kernels: " << t.elapsed() << "ms" << std::endl;
-
-	t.start();
-	CGAL::NefPolyhedron3* nef=new CGAL::NefPolyhedron3(p3);
-	std::cout << "Convertion to nef took: " << t.elapsed() << "ms" << std::endl;
-
-	return nef;
+	return res;
 }
 
 Primitive* CGALPrimitive::join(Primitive* pr)
@@ -277,7 +271,7 @@ Primitive* CGALPrimitive::join(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	nefPolyhedron=boolOperation(this,that,UNION);
+	polyhedron=boolOperation(this,that,UNION);
 	this->appendChild(that);
 	return this;
 }
@@ -289,7 +283,7 @@ Primitive* CGALPrimitive::intersection(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	nefPolyhedron=boolOperation(this,that,INTER);
+	polyhedron=boolOperation(this,that,INTER);
 	this->appendChild(that);
 	return this;
 }
@@ -301,7 +295,7 @@ Primitive* CGALPrimitive::difference(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	nefPolyhedron=boolOperation(this,that,MINUS);
+	polyhedron=boolOperation(this,that,MINUS);
 	this->appendChild(that);
 	return this;
 }
@@ -399,7 +393,23 @@ QList<Polygon*> CGALPrimitive::getPolygons() const
 
 const CGAL::NefPolyhedron3& CGALPrimitive::getNefPolyhedron()
 {
-	this->buildPrimitive();
+	if(nefPolyhedron)
+		return *nefPolyhedron;
+
+	MEPP_Polyhedron* res=static_cast<MEPP_Polyhedron*>(polyhedron);
+
+	QElapsedTimer t;
+
+	t.start();
+	CGAL::Polyhedron3 p3;
+	Copy_polyhedron_to<MEPP_Polyhedron,CGAL::Polyhedron3> b3(*res);
+	p3.delegate(b3);
+	std::cout << "Convertion between kernels: " << t.elapsed() << "ms" << std::endl;
+
+	t.start();
+	nefPolyhedron=new CGAL::NefPolyhedron3(p3);
+	std::cout << "Convertion to nef took: " << t.elapsed() << "ms" << std::endl;
+
 	return *nefPolyhedron;
 }
 
