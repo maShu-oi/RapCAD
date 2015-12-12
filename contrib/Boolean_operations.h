@@ -183,65 +183,6 @@ typedef MEPP_Polyhedron* PolyhedronPtr;
  */
 enum Bool_Op {UNION, INTER, MINUS};
 
-/*!
- * \typedef num_type
- * \brief exact number type
- */
-typedef CGAL::Lazy_exact_nt<CGAL::Gmpq>		num_type;
-
-/*!
- * \typedef Exact_Kernel
- * \brief Kernel using exact number type
- */
-typedef CGAL::Simple_cartesian<num_type>	Exact_Kernel;
-
-/*!
- * \typedef Vector_exact
- * \brief 3d vector using exact number type
- */
-typedef CGAL::Vector_3<Exact_Kernel>		Vector_exact;
-
-/*!
- * \typedef Point3d_exact
- * \brief 3d point using exact number type
- */
-typedef CGAL::Point_3<Exact_Kernel>			Point3d_exact;
-
-/**
- * \fn inline Point3d_exact point_to_exact(Point3d &p)
- * \brief Convertion from a Point3d (double) to a Point3d_exact (exact)
- * \param p : The Point3d
- * \return The conversion in Point3d_exact.
- */
-inline Point3d_exact point_to_exact(Point3d &p)
-{
-	return Point3d_exact(p.x(),p.y(),p.z());
-}
-
-/**
- * \fn inline Point3d point_to_double(Point3d_exact &pe)
- * \brief Convertion from a Point3d_exact (exact) to a Point3d (double)
- *
- * \param pe : The Point3d_exact
- * \return The conversion in Point3d (double).
- */
-inline Point3d point_to_double(Point3d_exact &pe)
-{
-	return Point3d(to_double(pe.x()),to_double(pe.y()),to_double(pe.z()));
-}
-
-/**
- * \fn inline Vector_exact Compute_Normal_direction(Halfedge_handle &he)
- * \brief Compute a vector in the same direction as the normal vector
- *
- * \param he : A Halfedge incident to the facet
- * \return The normal direction (exact).
- */
-inline Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression référence
-{
-	return CGAL::cross_product(	point_to_exact(he->next()->vertex()->point())			- point_to_exact(he->vertex()->point()),
-								point_to_exact(he->next()->next()->vertex()->point())	- point_to_exact(he->vertex()->point()));
-}
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
 
@@ -551,6 +492,7 @@ public:
 template <class K>
 class Triangulation
 {
+	typedef typename K::Vector_3	Vector_exact;
 	/*!
 	 * \typedef typename Point_3
 	 * \brief 3d point using exact number type
@@ -640,9 +582,9 @@ public:
 
 		//we add the three vertices of the facet to the triangulation
 		//The Label of these vertices is set for the corresponding point in the triangulation
-		v1 = add_new_pt(point_to_exact(he->vertex()->point()), he->vertex()->Label);
-		v2 = add_new_pt(point_to_exact(he->next()->vertex()->point()), he->next()->vertex()->Label);
-		v3 = add_new_pt(point_to_exact(he->next()->next()->vertex()->point()), he->next()->next()->vertex()->Label);
+		v1 = add_new_pt(he->vertex()->point(), he->vertex()->Label);
+		v2 = add_new_pt(he->next()->vertex()->point(), he->next()->vertex()->Label);
+		v3 = add_new_pt(he->next()->next()->vertex()->point(), he->next()->next()->vertex()->Label);
 
 		//if the vertices does not have an Id (Label = OxFFFFFFFF), the labels
 		//of the points in the triangulation is set as follows :
@@ -945,8 +887,11 @@ typedef CGAL::AABB_tree<AABB_Traits>												AABB_Tree;
 
 /*! \class BoolPolyhedra
  * \brief The class that compute a Boolean operation*/
+template <typename Kernel>
 class BoolPolyhedra {
-
+		typedef typename Kernel::FT	num_type;
+		typedef typename Kernel::Point_3 Point3d_exact;
+		typedef typename Kernel::Vector_3 Vector_exact;
 private:
 	/*! \struct Triangle_Cut
 	 * \brief A structure containing informations about an intersected facet*/
@@ -1069,7 +1014,18 @@ public:
 	~BoolPolyhedra() {}
 	
 private:
-
+	/**
+	 * \fn inline Vector_exact Compute_Normal_direction(Halfedge_handle &he)
+	 * \brief Compute a vector in the same direction as the normal vector
+	 *
+	 * \param he : A Halfedge incident to the facet
+	 * \return The normal direction (exact).
+	 */
+	inline Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression référence
+	{
+		return CGAL::cross_product(	he->next()->vertex()->point() - he->vertex()->point(),
+									he->next()->next()->vertex()->point() - he->vertex()->point());
+	}
 	/*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
 	 * \param pMA : The first polyhedron
 	 * \param pMB : The second polyhedron*/
@@ -1230,7 +1186,7 @@ private:
 				he = Facet_Handle[Facet]->facet_begin();
 				bool IsExt[3];
 				//creation of a triangulation
-				Triangulation<Exact_Kernel> T(he, TriCut.norm_dir);
+				Triangulation<Kernel> T(he, TriCut.norm_dir);
 				//add the list of intersection points (only happens in case of intersection of two edges)
 				for(std::set<InterId>::iterator i = TriCut.PtList.begin();i != TriCut.PtList.end();++i)
 				{
@@ -1365,12 +1321,12 @@ private:
 		heB[2] = heB[1]->next();
 
 		Point3d_exact ptA[3], ptB[3];
-		ptA[0] = point_to_exact(heA[0]->vertex()->point());
-		ptA[1] = point_to_exact(heA[1]->vertex()->point());
-		ptA[2] = point_to_exact(heA[2]->vertex()->point());
-		ptB[0] = point_to_exact(heB[0]->vertex()->point());
-		ptB[1] = point_to_exact(heB[1]->vertex()->point());
-		ptB[2] = point_to_exact(heB[2]->vertex()->point());
+		ptA[0] = heA[0]->vertex()->point();
+		ptA[1] = heA[1]->vertex()->point();
+		ptA[2] = heA[2]->vertex()->point();
+		ptB[0] = heB[0]->vertex()->point();
+		ptB[1] = heB[1]->vertex()->point();
+		ptB[2] = heB[2]->vertex()->point();
 
 		//compute the position of the three vertices of each triangle regarding the plane of the other
 		//positive if the vertex is above
@@ -1516,8 +1472,8 @@ private:
 			nA2nB = nA2 * nB;
 			nA2nB2 = nA2 * nB2;
 
-			ptA2 = point_to_exact(heA[edgeA]->opposite()->next()->vertex()->point());
-			ptB2 = point_to_exact(heB[edgeB]->opposite()->next()->vertex()->point());
+			ptA2 = heA[edgeA]->opposite()->next()->vertex()->point();
+			ptB2 = heB[edgeB]->opposite()->next()->vertex()->point();
 
 			posA_B = posA[(edgeA+1)%3];
 			posB_A = posB[(edgeB+1)%3];
@@ -1861,11 +1817,11 @@ private:
 		Vector_exact e1, e2, dir, p, s, q;
 		num_type u, v, tmp;
 
-		Point3d_exact s1 = point_to_exact(he->opposite()->vertex()->point());
-		Point3d_exact s2 = point_to_exact(he->vertex()->point());
-		Point3d_exact v0 = point_to_exact(f->facet_begin()->vertex()->point());
-		Point3d_exact v1 = point_to_exact(f->facet_begin()->next()->vertex()->point());
-		Point3d_exact v2 = point_to_exact(f->facet_begin()->next()->next()->vertex()->point());
+		Point3d_exact s1 = he->opposite()->vertex()->point();
+		Point3d_exact s2 = he->vertex()->point();
+		Point3d_exact v0 = f->facet_begin()->vertex()->point();
+		Point3d_exact v1 = f->facet_begin()->next()->vertex()->point();
+		Point3d_exact v2 = f->facet_begin()->next()->next()->vertex()->point();
 
 		//computation of the intersection (exact numbers)
 		e1 = v1 - v0;
@@ -1926,10 +1882,10 @@ private:
 		//the intersection does not have an Id. 0xFFFFFFFF is set (this value means "no Id")
 		inter->Id = 0xFFFFFFFF;
 
-		Point3d_exact p = point_to_exact(he->vertex()->point());
-		Point3d_exact v0 = point_to_exact(f->facet_begin()->vertex()->point());
-		Point3d_exact v1 = point_to_exact(f->facet_begin()->next()->vertex()->point());
-		Point3d_exact v2 = point_to_exact(f->facet_begin()->next()->next()->vertex()->point());
+		Point3d_exact p = he->vertex()->point();
+		Point3d_exact v0 = f->facet_begin()->vertex()->point();
+		Point3d_exact v1 = f->facet_begin()->next()->vertex()->point();
+		Point3d_exact v2 = f->facet_begin()->next()->next()->vertex()->point();
 
 		Vector_exact N = Inter_tri[f->Label].norm_dir;
 		num_type u, v, w;
@@ -2106,7 +2062,7 @@ private:
 		InterPts.push_back(inter->pt);
 
 		//add this point as a vertex of the result
-                ppbuilder.add_vertex(point_to_double(inter->pt), inter->Id);
+				ppbuilder.add_vertex(inter->pt, inter->Id);
 
 		//if the intersection is on the vertex pointed by the halfedge (he), we update the Id (Label) of this vertex
 		if(inter->IsOnVertex) he->vertex()->Label = I;
@@ -2365,7 +2321,7 @@ private:
 			Triangle_Cut TriCut = Inter_tri[pFacet->Label];
 			Halfedge_handle he = pFacet->facet_begin();
 			//creation of the triangulation
-			Triangulation<Exact_Kernel> T(he, TriCut.norm_dir);
+			Triangulation<Kernel> T(he, TriCut.norm_dir);
 			//add the intersection points to the triangulation
 			for(std::set<InterId>::iterator i = TriCut.PtList.begin();i != TriCut.PtList.end();++i)
 			{
