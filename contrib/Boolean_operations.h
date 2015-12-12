@@ -47,44 +47,40 @@ template <class Refs, class T, class P>
 class Enriched_vertex :
 	public CGAL::HalfedgeDS_vertex_base<Refs, T, P>
 {
-	public:
-		VertexId Label;
-		Enriched_vertex(){}
-		Enriched_vertex(const P& pt) : CGAL::HalfedgeDS_vertex_base<Refs, T, P>(pt)
-		{
-			this->point() = pt;
-		}
+public:
+	VertexId Label;
+	Enriched_vertex() {}
+	Enriched_vertex(const P& pt) : CGAL::HalfedgeDS_vertex_base<Refs, T, P>(pt)
+	{
+		this->point() = pt;
+	}
 
 };
 
-struct Enriched_items : public CGAL::Polyhedron_items_3
-{
+struct Enriched_items : public CGAL::Polyhedron_items_3 {
 	// wrap vertex
 	template <class Refs, class Traits>
-	struct Vertex_wrapper
-	{
+	struct Vertex_wrapper {
 		typedef typename Traits::Point_3  Point;
 		typedef Enriched_vertex<Refs,
-						  CGAL::Tag_true,
-						  Point> Vertex;
+				CGAL::Tag_true,
+				Point> Vertex;
 	};
 
 	// wrap face
 	template <class Refs, class Traits>
-	struct Face_wrapper
-	{
+	struct Face_wrapper {
 		typedef Enriched_facet<Refs,
-						 CGAL::Tag_true> Face;
+				CGAL::Tag_true> Face;
 	};
 
 	// wrap halfedge
 	template <class Refs, class Traits>
-	struct Halfedge_wrapper
-	{
+	struct Halfedge_wrapper {
 		typedef Enriched_halfedge<Refs,
-							CGAL::Tag_true,
-							CGAL::Tag_true,
-							CGAL::Tag_true> Halfedge;
+				CGAL::Tag_true,
+				CGAL::Tag_true,
+				CGAL::Tag_true> Halfedge;
 	};
 };
 
@@ -100,17 +96,14 @@ public:
 	{
 		Facet_iterator f = this->facets_begin();
 		Facet_iterator f2 = this->facets_begin();
-		do //for (; f != this->facets_end(); f++)
-		{
+		do { //for (; f != this->facets_end(); f++)
 			f = f2;
-			if (f == this->facets_end())
-			{
+			if(f == this->facets_end()) {
 				break;
 			}
 			f2++;
 
-			if (!(f->is_triangle()))
-			{
+			if(!(f->is_triangle())) {
 				int num = (int)(f->facet_degree() - 3);
 				Halfedge_handle h = f->halfedge();
 
@@ -118,17 +111,16 @@ public:
 
 				Halfedge_handle g = h->next();
 				g = g->next();
-				Halfedge_handle new_he = this->add_facet_to_border (h, g);
+				Halfedge_handle new_he = this->add_facet_to_border(h, g);
 //				new_he->texture_coordinates(h->texture_coordinates(0),h->texture_coordinates(1));
 //				new_he->opposite()->texture_coordinates(g->texture_coordinates(0),g->texture_coordinates(1));
 				g=new_he;
 
 				num--;
-				while (num != 0)
-				{
+				while(num != 0) {
 					g = g->opposite();
 					g = g->next();
-					Halfedge_handle new_he = this->add_facet_to_border (h, g);
+					Halfedge_handle new_he = this->add_facet_to_border(h, g);
 //					new_he->texture_coordinates(h->texture_coordinates(0),h->texture_coordinates(1));
 //					new_he->opposite()->texture_coordinates(g->texture_coordinates(0),g->texture_coordinates(1));
 					g=new_he;
@@ -139,7 +131,7 @@ public:
 				this->fill_hole(h);
 			}
 
-		} while (true);
+		} while(true);
 
 		//this->compute_normals();
 		//this->compute_type();
@@ -186,7 +178,7 @@ enum Bool_Op {UNION, INTER, MINUS};
  * \param n : The input number in double
  * \return The truncation in double.
  */
-inline double tr(double &n)
+inline double tr(double& n)
 {
 	return floor(n*1000)/1000;
 }
@@ -200,7 +192,8 @@ inline double tr(double &n)
  * \brief A polyhedron incremental builder
  */
 template <class HDS>
-class CPolyhedron_from_polygon_builder_3 : public CGAL::Modifier_base<HDS> {
+class CPolyhedron_from_polygon_builder_3 : public CGAL::Modifier_base<HDS>
+{
 
 public:
 	/*!
@@ -240,7 +233,7 @@ public:
 	 * \param f : The facet handle
 	 * \param invert : must be true if the orientation of the facet must be inverted
 	 */
-	void add_triangle(Facet_handle &f, bool invert)
+	void add_triangle(Facet_handle& f, bool invert)
 	{
 		//initially, the label of the vertices is 0xFFFFFFFF. if a vertex is added to the result, the tag is set to
 		//the number of vertices added.
@@ -256,15 +249,12 @@ public:
 		vi.push_back(he->vertex()->Label);
 
 		//the order of the two other vertices depends on the orientation of the facet
-		if(!invert)
-		{
+		if(!invert) {
 			if(he->next()->vertex()->Label == 0xFFFFFFFF) add_vertex(he->next()->vertex()->point(), he->next()->vertex()->Label);
 			vi.push_back(he->next()->vertex()->Label);
 			if(he->next()->next()->vertex()->Label == 0xFFFFFFFF) add_vertex(he->next()->next()->vertex()->point(), he->next()->next()->vertex()->Label);
 			vi.push_back(he->next()->next()->vertex()->Label);
-		}
-		else
-		{
+		} else {
 			if(he->next()->next()->vertex()->Label == 0xFFFFFFFF) add_vertex(he->next()->next()->vertex()->point(), he->next()->next()->vertex()->Label);
 			vi.push_back(he->next()->next()->vertex()->Label);
 			if(he->next()->vertex()->Label == 0xFFFFFFFF) add_vertex(he->next()->vertex()->point(), he->next()->vertex()->Label);
@@ -280,50 +270,38 @@ public:
 	 * \param T : The list of triangle to add. Each triangle is described as a list of three indices
 	 * \param he : First halfedge handle of the facet
 	 */
-		void add_triangle(vector<vector<unsigned long> > &T, Halfedge_handle &he)
+	void add_triangle(vector<vector<unsigned long> >& T, Halfedge_handle& he)
 	{
 		//For each triangle of the vector T...
-		for(unsigned int i = 0;i != T.size();++i)
-		{
+		for(unsigned int i = 0; i != T.size(); ++i) {
 			//we verify that the indices are valid.
 			//if one of the indices equals to 0xFFFFFFFF, 0xFFFFFFFE or 0XFFFFFFFD, it means that
 			//the corresponding vertex is respectively the first, the second or the third vertex
 			//of the facet.
-			for(unsigned int j = 0 ; j != 3 ; ++j)
-			{
-				switch (T[i][j])
-				{
+			for(unsigned int j = 0 ; j != 3 ; ++j) {
+				switch(T[i][j]) {
 				case 0xFFFFFFFF:
-					if(he->vertex()->Label != 0xFFFFFFFF)
-					{
+					if(he->vertex()->Label != 0xFFFFFFFF) {
 						T[i][j] = he->vertex()->Label;
-					}
-					else
-					{
+					} else {
 						T[i][j] = m_Sorted_vertices.size();
 						he->vertex()->Label = T[i][j];
 						m_Sorted_vertices.push_back(he->vertex()->point());
 					}
 					break;
 				case 0xFFFFFFFE:
-					if(he->next()->vertex()->Label != 0xFFFFFFFF)
-					{
+					if(he->next()->vertex()->Label != 0xFFFFFFFF) {
 						T[i][j] = he->next()->vertex()->Label;
-					}
-					else
-					{
+					} else {
 						T[i][j] = m_Sorted_vertices.size();
 						he->next()->vertex()->Label = T[i][j];
 						m_Sorted_vertices.push_back(he->next()->vertex()->point());
 					}
 					break;
 				case 0xFFFFFFFD:
-					if(he->next()->next()->vertex()->Label != 0xFFFFFFFF)
-					{
+					if(he->next()->next()->vertex()->Label != 0xFFFFFFFF) {
 						T[i][j] = he->next()->next()->vertex()->Label;
-					}
-					else
-					{
+					} else {
 						T[i][j] = m_Sorted_vertices.size();
 						he->next()->next()->vertex()->Label = T[i][j];
 						m_Sorted_vertices.push_back(he->next()->next()->vertex()->point());
@@ -342,7 +320,7 @@ public:
 	 * \param p : The point to add
 	 * \param l : The corresponding label
 	 */
-		void add_vertex(Point_3 p, unsigned long &l)    // MT: suppression référence
+	void add_vertex(Point_3 p, unsigned long& l)    // MT: suppression référence
 	{
 		//The value of the label is updated
 		l = m_Sorted_vertices.size();
@@ -371,8 +349,7 @@ private:
 	 */
 	void add_vertices(Builder& B)
 	{
-				for (int i = 0; i != (int)this->m_Sorted_vertices.size(); i++)
-		{
+		for(int i = 0; i != (int)this->m_Sorted_vertices.size(); i++) {
 			B.add_vertex(this->m_Sorted_vertices[i]);
 		}
 	}
@@ -381,13 +358,11 @@ private:
 	 * \brief Used to build the facets of the polyhedron
 	 * \param B : The builder
 	 */
-	void add_facets(Builder &B)
+	void add_facets(Builder& B)
 	{
-				for (int i = 0; i != (int)this->m_Facets_indices.size(); i++)
-		{
+		for(int i = 0; i != (int)this->m_Facets_indices.size(); i++) {
 			B.begin_facet();
-						for (int j = 0; j != (int)this->m_Facets_indices[i].size(); j++)
-			{
+			for(int j = 0; j != (int)this->m_Facets_indices[i].size(); j++) {
 				B.add_vertex_to_facet(this->m_Facets_indices[i][j]);
 			}
 			B.end_facet();
@@ -419,10 +394,16 @@ private:
 public:
 	/*! \brief Accessor
 	 * \param Label : The value to assign*/
-	void set_Label(unsigned long Label) {m_Label = Label;}
+	void set_Label(unsigned long Label)
+	{
+		m_Label = Label;
+	}
 	/*! \brief Accessor
 	 * \return The Label of the vertex*/
-	unsigned long get_Label() {return m_Label;}
+	unsigned long get_Label()
+	{
+		return m_Label;
+	}
 };
 
 /*!
@@ -461,21 +442,33 @@ public:
 	Enriched_face_base() : Fb() {}
 	Enriched_face_base(Vertex_handle v0, Vertex_handle v1, Vertex_handle v2) : Fb(v0,v1,v2) {}
 	Enriched_face_base(Vertex_handle v0, Vertex_handle v1, Vertex_handle v2,
-		Face_handle n0, Face_handle n1, Face_handle n2) : Fb(v0,v1,v2,n0,n1,n2) {}
+					   Face_handle n0, Face_handle n1, Face_handle n2) : Fb(v0,v1,v2,n0,n1,n2) {}
 	Enriched_face_base(Vertex_handle v0, Vertex_handle v1, Vertex_handle v2, Face_handle n0, Face_handle n1, Face_handle n2,
-					bool c0, bool c1, bool c2 ) : Fb(v0,v1,v2,n0,n1,n2) {}
+					   bool c0, bool c1, bool c2) : Fb(v0,v1,v2,n0,n1,n2) {}
 	/*! \brief Accessor
 	 * \param Ext : The value to assign*/
-	void set_Ext(bool Ext) {m_Ext = Ext;}
+	void set_Ext(bool Ext)
+	{
+		m_Ext = Ext;
+	}
 	/*! \brief Accessor
 	 * \return true if the triangle of the triangulation belongs to the result*/
-	bool get_Ext() {return m_Ext;}
+	bool get_Ext()
+	{
+		return m_Ext;
+	}
 	/*! \brief Accessor
 	 * \param OK : The value to assign*/
-	void set_OK(bool OK) {m_OK = OK;}
+	void set_OK(bool OK)
+	{
+		m_OK = OK;
+	}
 	/*! \brief Accessor
 	 * \return true if the parameter m_Ext has been determined*/
-	bool get_OK() {return m_OK;}
+	bool get_OK()
+	{
+		return m_OK;
+	}
 };
 
 /*!
@@ -496,13 +489,13 @@ class Triangulation
 	 * \typedef typename Tri_vb
 	 * \brief Vertex base
 	 */
-		typedef /*typename*/ Enriched_vertex_base<K>										Tri_vb;
+	typedef /*typename*/ Enriched_vertex_base<K>										Tri_vb;
 
 	/*!
 	 * \typedef typename Tri_fb
 	 * \brief Face base
 	 */
-		typedef /*typename*/ Enriched_face_base<K>											Tri_fb;
+	typedef /*typename*/ Enriched_face_base<K>											Tri_fb;
 
 	/*!
 	 * \typedef typename Tri_DS
@@ -552,7 +545,7 @@ public:
 	 * \param he : A halfedge incident to the facet
 	 * \param norm_dir : The vector directing the normal of the facet
 	 */
-	Triangulation(Halfedge_handle &he, Vector_exact &norm_dir)
+	Triangulation(Halfedge_handle& he, Vector_exact& norm_dir)
 	{
 		//find the longest coordinate of the normal vector, and its sign
 		double x = to_double(norm_dir.x());
@@ -569,9 +562,9 @@ public:
 		//3 : The coordinate X is the longest, and negative
 		//4 : The coordinate Y is the longest, and negative
 		//5 : The coordinate Z is the longest, and negative
-		if (absx >= absy && absx >= absz) max_coordinate = (x>0)?0:3;
-		else if (absy >= absx && absy >= absz) max_coordinate = (y>0)?1:4;
-		else if (absz >= absx && absz >= absy) max_coordinate = (z>0)?2:5;
+		if(absx >= absy && absx >= absz) max_coordinate = (x>0)?0:3;
+		else if(absy >= absx && absy >= absz) max_coordinate = (y>0)?1:4;
+		else if(absz >= absx && absz >= absy) max_coordinate = (z>0)?2:5;
 
 		//we add the three vertices of the facet to the triangulation
 		//The Label of these vertices is set for the corresponding point in the triangulation
@@ -593,10 +586,9 @@ public:
 	 * \param p : the point (in 3d)
 	 * \return The projection as a 2d point
 	 */
-	Point_tri get_minvar_point_2(Point_3 &p)
+	Point_tri get_minvar_point_2(Point_3& p)
 	{
-		switch(max_coordinate)
-		{
+		switch(max_coordinate) {
 		case 0:
 			return Point_tri(p.y(),p.z());
 			break;
@@ -626,11 +618,11 @@ public:
 	 * \param Label : The label of the point
 	 * \return The Vertex_handle of the point added
 	 */
-		Vertex_handle_tri add_new_pt(Point_3 p, unsigned long &Label)   // MT: suppression référence
+	Vertex_handle_tri add_new_pt(Point_3 p, unsigned long& Label)   // MT: suppression référence
 	{
 		//if the point is not a new one, we verify that the point has not already been added
 		if(Label != 0xFFFFFFFF)
-			for(unsigned int i = 0;i != pts_point.size();++i)
+			for(unsigned int i = 0; i != pts_point.size(); ++i)
 				if(Label == pts_point[i])
 					//if the point is already in the triangulation, we return its handle
 					return pts_vertex[i];
@@ -649,7 +641,7 @@ public:
 	 * \param Label1 : The label of the first point
 	 * \param Label2 : The label of the second point
 	 */
-	void add_segment(Point_3 &p1, Point_3 &p2, unsigned long &Label1, unsigned long &Label2)
+	void add_segment(Point_3& p1, Point_3& p2, unsigned long& Label1, unsigned long& Label2)
 	{
 		// we add the two points in the triangulation and store their handles in c1 and c2
 		c1 = add_new_pt(p1, Label1);
@@ -668,26 +660,26 @@ public:
 	 * \return The list of the triangles belonging to the result.
 	 * each triangle is defined by a list of three labels
 	 */
-		vector<vector<unsigned long> > get_triangles(bool inv_triangles, bool *IsExt)
+	vector<vector<unsigned long> > get_triangles(bool inv_triangles, bool* IsExt)
 	{
 		//init
 		IsExt[0] = false;
 		IsExt[1] = false;
 		IsExt[2] = false;
-				vector<vector<unsigned long> > tris;
-		for(Face_iterator_tri fi = ct.faces_begin();fi != ct.faces_end();fi++)
+		vector<vector<unsigned long> > tris;
+		for(Face_iterator_tri fi = ct.faces_begin(); fi != ct.faces_end(); fi++)
 			fi->set_OK(false);
 
 		//the constrained segments are oriented, we search the triangle (c1, c2, X), (X, c1, c2) or (c2, X, c1)
 		//where c1 and c2 are the two points related to the last constrained segment added, and X another point
 		//this triangle belongs to the result (thanks to the orientation of the segments)
 		Face_handle_tri f, f2 = c1->face();
-				int i=0; // MT
+		int i=0; // MT
 		do {
 			f = f2;
 			f->has_vertex(c1,i);
 			f2 = f->neighbor(f->ccw(i));
-		} while( ! ( f->has_vertex(c2) && f2->has_vertex(c2) ) );
+		} while(!(f->has_vertex(c2) && f2->has_vertex(c2)));
 
 		//dans le cas particulier ou la frontiere se trouve exactement sur un bord de la triangulation,
 		//et que ce triangle n'appartient pas a la triangulation, on démarrera avec l'autre triangle
@@ -696,13 +688,10 @@ public:
 		//if the segment is exactly on the border of the triangulation, the triangle could be outside the triangulation
 		//in that case, we will search the other triangle including the points c1 and c2
 		//this triangle does not belong to the result
-		if(f->has_vertex(ct.infinite_vertex()))
-		{
+		if(f->has_vertex(ct.infinite_vertex())) {
 			f = f2;
 			f->set_Ext(false);
-		}
-		else
-		{
+		} else {
 			f->set_Ext(true);
 		}
 
@@ -713,13 +702,11 @@ public:
 		//we decide for all the triangles, if they belongs to the result, starting from the first triangle f,
 		//by moving on the triangulation using the connectivity between the triangles.
 		//If a constrained segment is crossed, the value of the tag "isext" is inverted
-		while(!sfh.empty())
-		{
+		while(!sfh.empty()) {
 			f = sfh.top();
 			sfh.pop();
 
-			if(f->get_Ext())
-			{
+			if(f->get_Ext()) {
 				vector<unsigned long> tri;
 				int i;
 				tri.push_back(f->vertex(0)->get_Label());
@@ -729,22 +716,17 @@ public:
 				if(f->has_vertex(v2,i) && f->neighbor(f->ccw(i))->has_vertex(ct.infinite_vertex())) IsExt[1] = true;
 				if(f->has_vertex(v3,i) && f->neighbor(f->ccw(i))->has_vertex(ct.infinite_vertex())) IsExt[2] = true;
 
-				if(inv_triangles)
-				{
+				if(inv_triangles) {
 					tri.push_back(f->vertex(2)->get_Label());
 					tri.push_back(f->vertex(1)->get_Label());
-				}
-				else
-				{
+				} else {
 					tri.push_back(f->vertex(1)->get_Label());
 					tri.push_back(f->vertex(2)->get_Label());
 				}
 				tris.push_back(tri);
 			}
-			for(i = 0;i!=3;i++)
-			{
-				if(!(f->neighbor(i)->get_OK() || f->neighbor(i)->has_vertex(ct.infinite_vertex())))
-				{
+			for(i = 0; i!=3; i++) {
+				if(!(f->neighbor(i)->get_OK() || f->neighbor(i)->has_vertex(ct.infinite_vertex()))) {
 					f->neighbor(i)->set_OK(true);
 					f->neighbor(i)->set_Ext((f->is_constrained(i))?!f->get_Ext():f->get_Ext());
 					sfh.push(f->neighbor(i));
@@ -760,20 +742,16 @@ public:
 	 * \return The list of the triangles belonging to the result.
 	 * each triangle is defined by a list of three labels
 	 */
-		vector<vector<unsigned long> > get_all_triangles(bool inv_triangles)
+	vector<vector<unsigned long> > get_all_triangles(bool inv_triangles)
 	{
-				vector<vector<unsigned long> > tris;
-		for(Face_iterator_tri f = ct.faces_begin();f != ct.faces_end();f++)
-		{
+		vector<vector<unsigned long> > tris;
+		for(Face_iterator_tri f = ct.faces_begin(); f != ct.faces_end(); f++) {
 			vector<unsigned long> tri;
 			tri.push_back(f->vertex(0)->get_Label());
-			if(inv_triangles)
-			{
+			if(inv_triangles) {
 				tri.push_back(f->vertex(2)->get_Label());
 				tri.push_back(f->vertex(1)->get_Label());
-			}
-			else
-			{
+			} else {
 				tri.push_back(f->vertex(1)->get_Label());
 				tri.push_back(f->vertex(2)->get_Label());
 			}
@@ -839,17 +817,20 @@ public:
 	 * \brief creates a triangle a little bigger
 	 * \param _f : handle of a triangular facet of a polyhedron
 	 */
-	Enriched_Triangle(Facet_handle &_f)
-		: AABB_Kernel::Triangle_3(	to_K(_f->facet_begin()->vertex()->point() + (_f->facet_begin()->vertex()->point() - _f->facet_begin()->next()->vertex()->point()) / 1000),
-									to_K(_f->facet_begin()->next()->vertex()->point() + (_f->facet_begin()->next()->vertex()->point() - _f->facet_begin()->next()->next()->vertex()->point()) / 1000),
-									to_K(_f->facet_begin()->next()->next()->vertex()->point() + (_f->facet_begin()->next()->next()->vertex()->point() - _f->facet_begin()->vertex()->point()) / 1000)
-									), f(_f) {}
+	Enriched_Triangle(Facet_handle& _f)
+		: AABB_Kernel::Triangle_3(to_K(_f->facet_begin()->vertex()->point() + (_f->facet_begin()->vertex()->point() - _f->facet_begin()->next()->vertex()->point()) / 1000),
+								  to_K(_f->facet_begin()->next()->vertex()->point() + (_f->facet_begin()->next()->vertex()->point() - _f->facet_begin()->next()->next()->vertex()->point()) / 1000),
+								  to_K(_f->facet_begin()->next()->next()->vertex()->point() + (_f->facet_begin()->next()->next()->vertex()->point() - _f->facet_begin()->vertex()->point()) / 1000)
+								 ), f(_f) {}
 
 
 	/*! \brief Accessor
 	 * \return The handle of the facet used to build the triangle
 	 */
-	Facet_handle facet() {return f;}
+	Facet_handle facet()
+	{
+		return f;
+	}
 
 	/*! \brief convert any 3d point in the kernel used by the AABB-tree
 	 * \param p : The point to convert
@@ -864,7 +845,7 @@ private:
 	/*! \brief The handle of the facet used to build the triangle*/
 	Facet_handle f;
 };
-	
+
 /*! \typedef Triangle
  * \brief A triangle enriched with a facet handle*/
 typedef Enriched_Triangle															Triangle;
@@ -881,33 +862,38 @@ typedef CGAL::AABB_tree<AABB_Traits>												AABB_Tree;
 /*! \class BoolPolyhedra
  * \brief The class that compute a Boolean operation*/
 template <typename Kernel>
-class BoolPolyhedra {
-		typedef typename Kernel::FT	FT;
-		typedef typename Kernel::Point_3 Point_3;
-		typedef typename Kernel::Vector_3 Vector_3;
+class BoolPolyhedra
+{
+	typedef typename Kernel::FT	FT;
+	typedef typename Kernel::Point_3 Point_3;
+	typedef typename Kernel::Vector_3 Vector_3;
 private:
 	/*! \struct Triangle_Cut
 	 * \brief A structure containing informations about an intersected facet*/
-        struct Triangle_Cut {
+	struct Triangle_Cut {
 		/*! \brief true if the facet belongs to the first polyhedron*/
 		bool								Facet_from_A;
 		/*! \brief An exact vector giving the direction of the normal*/
 		Vector_3						norm_dir;
 		/*! \brief A list of segments (the intersections with the facets of the other polyhedron)*/
-                std::vector<std::vector<InterId> >	CutList;
+		std::vector<std::vector<InterId> >	CutList;
 		/*! \brief A list of points (when the intersection is a point)*/
 		std::set<InterId>					PtList;
 		/*! \brief The list of the intersections*/
 		std::map<HalfedgeId, InterId>		RefInter;
 
-                /*! \brief Default constructor*/
-                Triangle_Cut() {}
-                /*! \brief Constructor
-                 \param V : The normal direction
-                 \param ffA : Must be true if the facet belongs to the first polyhedron*/
-				Triangle_Cut(Vector_3 V, bool ffA) { norm_dir=V; Facet_from_A=ffA; } // MT
+		/*! \brief Default constructor*/
+		Triangle_Cut() {}
+		/*! \brief Constructor
+		 \param V : The normal direction
+		 \param ffA : Must be true if the facet belongs to the first polyhedron*/
+		Triangle_Cut(Vector_3 V, bool ffA)
+		{
+			norm_dir=V;    // MT
+			Facet_from_A=ffA;
+		}
 	};
-	
+
 	/*! \struct Info_Inter
 	 * \brief Contains informations about an intersection between a facet and a halfedge*/
 	struct Info_Inter {
@@ -932,7 +918,7 @@ private:
 		/*! \brief The Id of the intersection point*/
 		InterId				Id;
 	};
-	
+
 public:
 	/*! \brief Constructor.
 	 * \brief Computes a boolean operation
@@ -940,13 +926,15 @@ public:
 	 * \param pMB : The second polyhedron
 	 * \param pMout : The result polyhedron
 	 * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-	BoolPolyhedra(PolyhedronPtr &pMA, PolyhedronPtr &pMB, PolyhedronPtr &pMout, Bool_Op BOOP) : m_BOOP(BOOP)
+	BoolPolyhedra(PolyhedronPtr& pMA, PolyhedronPtr& pMB, PolyhedronPtr& pMout, Bool_Op BOOP) : m_BOOP(BOOP)
 	{
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
-		std::ofstream ofstrMA("input_A_boolsum.off"); ofstrMA << *pMA;
-		std::ofstream ofstrMB("input_B_boolsum.off"); ofstrMB << *pMB;
-		Time_measure Timer_total, Timer;	
+		std::ofstream ofstrMA("input_A_boolsum.off");
+		ofstrMA << *pMA;
+		std::ofstream ofstrMB("input_B_boolsum.off");
+		ofstrMB << *pMB;
+		Time_measure Timer_total, Timer;
 
 		Timer_total.Start();
 		Timer.Start();
@@ -966,8 +954,7 @@ public:
 		Timer.Start();
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
-		if(!m_Couples.empty())
-		{
+		if(!m_Couples.empty()) {
 			ComputeIntersections();
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
@@ -994,7 +981,8 @@ public:
 #ifdef BOOLEAN_OPERATIONS_DEBUG
 			duration_delegate = Timer.GetDiff();
 			duration_total = Timer_total.GetDiff();
-			std::ofstream ofstrMS("output_boolsum.off"); ofstrMS << *pMout;
+			std::ofstream ofstrMS("output_boolsum.off");
+			ofstrMS << *pMout;
 			ofstrtime.open("output_time.txt");
 			WriteData(pMout);
 			ColorType();
@@ -1002,10 +990,10 @@ public:
 
 		}
 	}
-	
+
 	/*! \brief Destructor*/
 	~BoolPolyhedra() {}
-	
+
 private:
 	/**
 	 * \fn inline Vector_exact Compute_Normal_direction(Halfedge_handle &he)
@@ -1016,13 +1004,13 @@ private:
 	 */
 	inline Vector_3 Compute_Normal_direction(Halfedge_handle he)   // MT: suppression référence
 	{
-		return CGAL::cross_product(	he->next()->vertex()->point() - he->vertex()->point(),
-									he->next()->next()->vertex()->point() - he->vertex()->point());
+		return CGAL::cross_product(he->next()->vertex()->point() - he->vertex()->point(),
+								   he->next()->next()->vertex()->point() - he->vertex()->point());
 	}
 	/*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
 	 * \param pMA : The first polyhedron
 	 * \param pMB : The second polyhedron*/
-	void Init(PolyhedronPtr &pMA, PolyhedronPtr &pMB)
+	void Init(PolyhedronPtr& pMA, PolyhedronPtr& pMB)
 	{
 		m_pA = pMA;
 		m_pB = pMB;
@@ -1033,28 +1021,24 @@ private:
 		if(!m_pB->is_pure_triangle()) m_pB->triangulate();
 
 		//initialize the tags
-		for(Vertex_iterator pVertex = m_pA->vertices_begin();pVertex != m_pA->vertices_end();++pVertex)
-		{
+		for(Vertex_iterator pVertex = m_pA->vertices_begin(); pVertex != m_pA->vertices_end(); ++pVertex) {
 			pVertex->Label = 0xFFFFFFFF;
 		}
-		for(Vertex_iterator pVertex = m_pB->vertices_begin();pVertex != m_pB->vertices_end();++pVertex)
-		{
+		for(Vertex_iterator pVertex = m_pB->vertices_begin(); pVertex != m_pB->vertices_end(); ++pVertex) {
 			pVertex->Label = 0xFFFFFFFF;
 		}
-		for(Facet_iterator pFacet = m_pA->facets_begin();pFacet != m_pA->facets_end();++pFacet)
-		{
+		for(Facet_iterator pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); ++pFacet) {
 			pFacet->Label = 0xFFFFFFFF;
 			pFacet->IsExt = false;
 			pFacet->IsOK = false;
 		}
-		for(Facet_iterator pFacet = m_pB->facets_begin();pFacet != m_pB->facets_end();++pFacet)
-		{
+		for(Facet_iterator pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); ++pFacet) {
 			pFacet->Label = 0xFFFFFFFF;
 			pFacet->IsExt = false;
 			pFacet->IsOK = false;
 		}
 	}
-	
+
 	/*! \brief Finds every couple of facets between the two input polyhedra that intersects
 	 * \brief Each couple is stored in the member m_Couples*/
 	void FindCouples()
@@ -1068,19 +1052,16 @@ private:
 		FacetId j = 0;
 
 		//The AABB-tree is built on the polyhedron with the less number of facets
-		if(m_pA->size_of_facets() < m_pB->size_of_facets())
-		{
+		if(m_pA->size_of_facets() < m_pB->size_of_facets()) {
 			//Building the AABB-tree on the first polyhedron
 			for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++) triangles.push_back(Triangle(pFacet));
 			tree.rebuild(triangles.begin(),triangles.end());
 
 			//collision test with each facet of the second polyhedron
-			for (pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
-			{
+			for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++) {
 				//"primitives" is the list of the triangles intersected (as a list of triangles)
 				tree.all_intersected_primitives(Triangle(pFacet), std::back_inserter(primitives));
-				if(primitives.size() !=0)
-				{
+				if(primitives.size() !=0) {
 					Facet_Handle.push_back(pFacet);
 					//update of the tags (the facet and the three incidents halfedges
 					pFacet->Label = j++;
@@ -1091,8 +1072,7 @@ private:
 					Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(pFacet->facet_begin()), false));
 					do {
 						//same operations for the intersected primitives (only one time)
-						if(primitives.back()->facet()->Label == 0xFFFFFFFF)
-						{
+						if(primitives.back()->facet()->Label == 0xFFFFFFFF) {
 							Facet_Handle.push_back(primitives.back()->facet());
 							primitives.back()->facet()->Label = j++;
 							primitives.back()->facet()->facet_begin()->Label = i++;
@@ -1103,24 +1083,19 @@ private:
 						//store every couple of intersected facet
 						m_Couples[primitives.back()->facet()->Label].insert(pFacet->Label);
 						primitives.pop_back();
-					}
-					while(primitives.size() != 0);
+					} while(primitives.size() != 0);
 				}
 			}
-		}
-		else
-		{
+		} else {
 			//Building the AABB-tree on the second polyhedron
 			for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++) triangles.push_back(Triangle(pFacet));
 			tree.rebuild(triangles.begin(),triangles.end());
 
 			//collision test with each facet of the first polyhedron
-			for (pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
-			{
+			for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++) {
 				//"primitives" is the list of the triangles intersected (as a list of triangles)
 				tree.all_intersected_primitives(Triangle(pFacet), std::back_inserter(primitives));
-				if(primitives.size() !=0)
-				{
+				if(primitives.size() !=0) {
 					Facet_Handle.push_back(pFacet);
 					//update of the tags (the facet and the three incidents halfedges
 					pFacet->Label = j++;
@@ -1131,8 +1106,7 @@ private:
 					Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(pFacet->facet_begin()), true));
 					do {
 						//same operations for the intersected primitives (only one time)
-						if(primitives.back()->facet()->Label == 0xFFFFFFFF)
-						{
+						if(primitives.back()->facet()->Label == 0xFFFFFFFF) {
 							Facet_Handle.push_back(primitives.back()->facet());
 							primitives.back()->facet()->Label = j++;
 							primitives.back()->facet()->facet_begin()->Label = i++;
@@ -1143,18 +1117,16 @@ private:
 						//store every couple of intersected facet
 						m_Couples[pFacet->Label].insert(primitives.back()->facet()->Label);
 						primitives.pop_back();
-					}
-					while(primitives.size() != 0);
+					} while(primitives.size() != 0);
 				}
 			}
 		}
 	}
-	
+
 	/*! \brief Compute the intersections*/
 	void ComputeIntersections()
 	{
-		while(!m_Couples.empty())
-		{
+		while(!m_Couples.empty()) {
 			FacetId fA, fB;
 			fA = m_Couples.begin()->first;
 			fB = *m_Couples[fA].begin();
@@ -1163,7 +1135,7 @@ private:
 		}
 	}
 
-	
+
 	/*! \brief Cuts the intersected facets and starts to build the result*/
 	void CutIntersectedFacets()
 	{
@@ -1171,28 +1143,24 @@ private:
 		Halfedge_handle he;
 
 		//every intersected facet is triangulated if at least one of the intersections is a segment
-		for(FacetId Facet = 0 ; Facet != Inter_tri.size() ; ++Facet)
-		{
-			if(!Inter_tri[Facet].CutList.empty())
-			{
+		for(FacetId Facet = 0 ; Facet != Inter_tri.size() ; ++Facet) {
+			if(!Inter_tri[Facet].CutList.empty()) {
 				TriCut = Inter_tri[Facet];
 				he = Facet_Handle[Facet]->facet_begin();
 				bool IsExt[3];
 				//creation of a triangulation
 				Triangulation<Kernel> T(he, TriCut.norm_dir);
 				//add the list of intersection points (only happens in case of intersection of two edges)
-				for(std::set<InterId>::iterator i = TriCut.PtList.begin();i != TriCut.PtList.end();++i)
-				{
-                                        T.add_new_pt(InterPts[*i], (unsigned long &)*i);    // MT: ajout cast
+				for(std::set<InterId>::iterator i = TriCut.PtList.begin(); i != TriCut.PtList.end(); ++i) {
+					T.add_new_pt(InterPts[*i], (unsigned long&)*i);     // MT: ajout cast
 				}
 				//add the intersection segments
-                                for(int i = 0;i!=(int)TriCut.CutList.size();++i)
-				{
+				for(int i = 0; i!=(int)TriCut.CutList.size(); ++i) {
 					T.add_segment(InterPts[TriCut.CutList[i][0]], InterPts[TriCut.CutList[i][1]], TriCut.CutList[i][0], TriCut.CutList[i][1]);
 				}
 				//get the triangles of the triangulation thay belong to the result
 				//and determine if the three neighboring facets belongs to the result (using IsExt[3])
-                                vector<vector<unsigned long> > Tri_set = T.get_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false, IsExt);
+				vector<vector<unsigned long> > Tri_set = T.get_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false, IsExt);
 				//add these triangles to the result
 				ppbuilder.add_triangle(Tri_set, he);
 
@@ -1204,7 +1172,7 @@ private:
 			}
 		}
 	}
-	
+
 	/*! \brief Complete the building of the result*/
 	void PropagateFacets()
 	{
@@ -1212,90 +1180,80 @@ private:
 		stack<Facet_handle> tmpTriangles;
 
 		//add to a stack the intersected facets that have been cut during CutIntersectedFacets
-		for (pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
-		{
+		for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++) {
 			if(pFacet->IsOK) tmpTriangles.push(pFacet);
 		}
-		
+
 		//while the stack is not empty, we look the three neighboring facets
 		//if these facets has not been validated (IsOK == false), the facet is validated and added to the stack
 		//if this facet is taged as a part of the result (IsExt == true), the facet is added to the result
-		while(!tmpTriangles.empty())
-		{
+		while(!tmpTriangles.empty()) {
 			f = tmpTriangles.top();
 			tmpTriangles.pop();
 			nf = f->facet_begin()->opposite()->facet();
-			if(!nf->IsOK)
-			{
+			if(!nf->IsOK) {
 				nf->IsOK = true;
 				tmpTriangles.push(nf);
 				if(nf->IsExt) add_facet_to_solution(nf, true);
 			}
 			nf = f->facet_begin()->next()->opposite()->facet();
-			if(!nf->IsOK)
-			{
+			if(!nf->IsOK) {
 				nf->IsOK = true;
 				tmpTriangles.push(nf);
 				if(nf->IsExt) add_facet_to_solution(nf, true);
 			}
 			nf = f->facet_begin()->next()->next()->opposite()->facet();
-			if(!nf->IsOK)
-			{
+			if(!nf->IsOK) {
 				nf->IsOK = true;
 				tmpTriangles.push(nf);
 				if(nf->IsExt) add_facet_to_solution(nf, true);
 			}
 		}
-		
+
 		//same process for the second polyhedron
-		for (pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
-		{
+		for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++) {
 			if(pFacet->IsOK) tmpTriangles.push(pFacet);
 		}
-		
-		while(!tmpTriangles.empty())
-		{
+
+		while(!tmpTriangles.empty()) {
 			f = tmpTriangles.top();
 			tmpTriangles.pop();
 			nf = f->facet_begin()->opposite()->facet();
-			if(!nf->IsOK)
-			{
+			if(!nf->IsOK) {
 				nf->IsOK = true;
 				tmpTriangles.push(nf);
 				if(nf->IsExt) add_facet_to_solution(nf, false);
 			}
 			nf = f->facet_begin()->next()->opposite()->facet();
-			if(!nf->IsOK)
-			{
+			if(!nf->IsOK) {
 				nf->IsOK = true;
 				tmpTriangles.push(nf);
 				if(nf->IsExt) add_facet_to_solution(nf, false);
 			}
 			nf = f->facet_begin()->next()->next()->opposite()->facet();
-			if(!nf->IsOK)
-			{
+			if(!nf->IsOK) {
 				nf->IsOK = true;
 				tmpTriangles.push(nf);
 				if(nf->IsExt) add_facet_to_solution(nf, false);
 			}
 		}
 	}
-	
+
 
 	/*! \brief removes properly a couple from the list
 	 * \param A : Id of the first facet
 	 * \param B : Id of the second facet
 	 */
-	void rmCouple(FacetId &A, FacetId &B)
+	void rmCouple(FacetId& A, FacetId& B)
 	{
 		if(m_Couples[A].count(B) != 0) m_Couples[A].erase(B);
 		if(m_Couples[A].empty()) m_Couples.erase(A);
 	}
-	
+
 	/*! \brief Compute the intersection between two facets
 	 * \param A : Facet Id of the first facet (from the first polyhedron)
 	 * \param B : Facet Id of the second facet (from the second polyhedron)*/
-	void InterTriangleTriangle(FacetId &A, FacetId &B)
+	void InterTriangleTriangle(FacetId& A, FacetId& B)
 	{
 		Vector_3 nA, nB;
 		nA = Inter_tri[A].norm_dir;
@@ -1336,27 +1294,27 @@ private:
 		//a code is computed on 6 bits using these results (two bits for each point)
 		//10 -> above ; 01 -> under ; 00 -> on the plane
 		unsigned short posAbin, posBbin;
-		posAbin =	  ( (posA[0] > 0)? 32 : 0 )
-					+ ( (posA[0] < 0)? 16 : 0 )
-					+ ( (posA[1] > 0)? 8 : 0 )
-					+ ( (posA[1] < 0)? 4 : 0 )
-					+ ( (posA[2] > 0)? 2 : 0 )
-					+ ( (posA[2] < 0)? 1 : 0 );
+		posAbin = ((posA[0] > 0)? 32 : 0)
+				  + ((posA[0] < 0)? 16 : 0)
+				  + ((posA[1] > 0)? 8 : 0)
+				  + ((posA[1] < 0)? 4 : 0)
+				  + ((posA[2] > 0)? 2 : 0)
+				  + ((posA[2] < 0)? 1 : 0);
 
-		posBbin =	  ( (posB[0] > 0)? 32 : 0 )
-					+ ( (posB[0] < 0)? 16 : 0 )
-					+ ( (posB[1] > 0)? 8 : 0 )
-					+ ( (posB[1] < 0)? 4 : 0 )
-					+ ( (posB[2] > 0)? 2 : 0 )
-					+ ( (posB[2] < 0)? 1 : 0 );
+		posBbin = ((posB[0] > 0)? 32 : 0)
+				  + ((posB[0] < 0)? 16 : 0)
+				  + ((posB[1] > 0)? 8 : 0)
+				  + ((posB[1] < 0)? 4 : 0)
+				  + ((posB[2] > 0)? 2 : 0)
+				  + ((posB[2] < 0)? 1 : 0);
 
 		//if the intersection is not a segment, the intersection is not computed
 		//the triangles intersects on a point (one vertex on the plane and the two others under or above
 		if(posAbin == 5 || posAbin == 10 || posAbin == 17 || posAbin == 34 || posAbin == 20 || posAbin == 40
-		|| posBbin == 5 || posBbin == 10 || posBbin == 17 || posBbin == 34 || posBbin == 20 || posBbin == 40) return;
+		   || posBbin == 5 || posBbin == 10 || posBbin == 17 || posBbin == 34 || posBbin == 20 || posBbin == 40) return;
 		//no possible intersection (one of the triangle is completely under or above the other
 		if(posAbin == 42 || posAbin == 21
-		|| posBbin == 42 || posBbin == 21) return;
+		   || posBbin == 42 || posBbin == 21) return;
 		//the triangles are coplanar
 		if(posAbin == 0) return;
 
@@ -1369,12 +1327,12 @@ private:
 		//2 : the third edge is on the plane
 		//3 : there is no edge on the plane
 		unsigned short edgeA = 3, edgeB = 3;
-		if(     posAbin == 1  || posAbin == 2 ) edgeA = 1; //points 0 and 1 on the plane
+		if(posAbin == 1  || posAbin == 2) edgeA = 1;       //points 0 and 1 on the plane
 		else if(posAbin == 16 || posAbin == 32) edgeA = 2; //points 1 and 2 on the plane
-		else if(posAbin == 4  || posAbin == 8 ) edgeA = 0; //points 2 and 0 on the plane
-		if(     posBbin == 1  || posBbin == 2 ) edgeB = 1; //points 0 and 1 on the plane
+		else if(posAbin == 4  || posAbin == 8) edgeA = 0;  //points 2 and 0 on the plane
+		if(posBbin == 1  || posBbin == 2) edgeB = 1;       //points 0 and 1 on the plane
 		else if(posBbin == 16 || posBbin == 32) edgeB = 2; //points 1 and 2 on the plane
-		else if(posBbin == 4  || posBbin == 8 ) edgeB = 0; //points 2 and 0 on the plane
+		else if(posBbin == 4  || posBbin == 8) edgeB = 0;  //points 2 and 0 on the plane
 
 		Vector_3 nA2, nB2;
 		FT p;
@@ -1382,8 +1340,7 @@ private:
 		bool stop = false;
 
 		//if an edge of the first triangle is on the plane
-		if(edgeA != 3 && edgeB == 3)
-		{
+		if(edgeA != 3 && edgeB == 3) {
 			fA2 = heA[edgeA]->opposite()->facet();
 			nA2 = Inter_tri[fA2->Label].norm_dir;
 			p = CGAL::cross_product(nA, nB) * CGAL::cross_product(nA2, nB);
@@ -1393,10 +1350,8 @@ private:
 			//if p == 0, fA2 is coplanar with the plane of fB
 			//in that case, it is necessary to consider the boolean
 			//operator used to determine if there is a contact or not
-			else if(p == 0)
-			{
-				switch(m_BOOP)
-				{
+			else if(p == 0) {
+				switch(m_BOOP) {
 				case UNION:
 					if(posA[(edgeA+1)%3] * (nA2 * nB) > 0) stop = true;
 					break;
@@ -1408,12 +1363,11 @@ private:
 					break;
 				}
 			}
-			//the intersection between fA2 and fB is the same so this couple is removed from the list 
+			//the intersection between fA2 and fB is the same so this couple is removed from the list
 			rmCouple(fA2->Label, fB->Label);
 		}
 		//if an edge of the second triangle is on the plane
-		else if(edgeA == 3 && edgeB != 3)
-		{
+		else if(edgeA == 3 && edgeB != 3) {
 			fB2 = heB[edgeB]->opposite()->facet();
 			nB2 = Inter_tri[fB2->Label].norm_dir;
 			p = CGAL::cross_product(nA, nB) * CGAL::cross_product(nA, nB2);
@@ -1423,10 +1377,8 @@ private:
 			//if p == 0, fB2 is coplanar with the plane of fA
 			//in that case, it is necessary to consider the boolean
 			//operator used to determine if there is a contact or not
-			else if(p == 0)
-			{
-				switch(m_BOOP)
-				{
+			else if(p == 0) {
+				switch(m_BOOP) {
 				case UNION:
 					if(posB[(edgeB+1)%3] < 0) stop = true;
 					break;
@@ -1438,12 +1390,11 @@ private:
 					break;
 				}
 			}
-			//the intersection between fA and fB2 is the same so this couple is removed from the list 
+			//the intersection between fA and fB2 is the same so this couple is removed from the list
 			rmCouple(fA->Label, fB2->Label);
 		}
 		//if an edge of each triangle is on the plane of the other
-		else if(edgeA != 3 && edgeB != 3)
-		{
+		else if(edgeA != 3 && edgeB != 3) {
 			//in this case, four triangles are concerned by the intersection
 			//fA2 and fB2 are the two other concerned facets
 			//we try to determine if fA and fA2 are inside or outside the second polyhedron, using fB and fB2
@@ -1480,79 +1431,49 @@ private:
 			posB2_B = nB * (ptB2 - ptA[edgeA]);
 
 			if(nAcnB2 == CGAL::NULL_VECTOR && nA2cnB == CGAL::NULL_VECTOR
-				&& nAnB2 * nA2nB > 0) stop = true;
+			   && nAnB2 * nA2nB > 0) stop = true;
 
 			//firstly, we search the position of fA
 			//if fA is inside the poyhedron, Intersection = true
-			if(posB_A * posB2_A > 0) //fB and fB2 on the same side
-			{
+			if(posB_A * posB2_A > 0) { //fB and fB2 on the same side
 				if(posB_B2 > 0) Intersection = true;
-			}
-			else if(posB_A * posB2_A < 0) //fB and fB2 on opposite side
-			{
+			} else if(posB_A * posB2_A < 0) { //fB and fB2 on opposite side
 				if(posA_B < 0) Intersection = true;
-			}
-			else  //fA and fB2 coplanar
-			{
-				if(posA_B * posB2_B < 0)
-				{
+			} else { //fA and fB2 coplanar
+				if(posA_B * posB2_B < 0) {
 					if(posB_B2 > 0) Intersection = true;
-				}
-				else
-				{
-					if(nAnB2 < 0)
-					{
+				} else {
+					if(nAnB2 < 0) {
 						if(m_BOOP == UNION) Intersection = true;
-					}
-					else
-					{
+					} else {
 						if(m_BOOP == MINUS) Intersection = true;
 					}
 				}
 			}
-			
+
 			//secondly, we search the position of fA2
 			//if fA2 is inside the poyhedron, "Intersection" is inverted
-			if(posB_A2 * posB2_A2 > 0) //fB and fB2 on the same side
-			{
+			if(posB_A2 * posB2_A2 > 0) { //fB and fB2 on the same side
 				if(posB_B2 > 0) Intersection = !Intersection;
-			}
-			else if(posB_A2 * posB2_A2 < 0) //fB and fB2 on opposite side
-			{
+			} else if(posB_A2 * posB2_A2 < 0) { //fB and fB2 on opposite side
 				if(posA2_B < 0) Intersection = !Intersection;
-			}
-			else if(posB2_A2 == 0) //fA2 and fB2 coplanar
-			{
-				if(posA2_B * posB2_B < 0)
-				{
+			} else if(posB2_A2 == 0) { //fA2 and fB2 coplanar
+				if(posA2_B * posB2_B < 0) {
 					if(posB_B2 > 0) Intersection = !Intersection;
-				}
-				else
-				{
-					if(nA2nB2 < 0)
-					{
+				} else {
+					if(nA2nB2 < 0) {
 						if(m_BOOP == UNION) Intersection = !Intersection;
-					}
-					else
-					{
+					} else {
 						if(m_BOOP == MINUS) Intersection = !Intersection;
 					}
 				}
-			}
-			else //fA2 and fB coplanar
-			{
-				if(posA2_B2 * posB_B2 < 0)
-				{
+			} else { //fA2 and fB coplanar
+				if(posA2_B2 * posB_B2 < 0) {
 					if(posB_B2 > 0) Intersection = !Intersection;
-				}
-				else
-				{
-					if(nA2nB < 0)
-					{
+				} else {
+					if(nA2nB < 0) {
 						if(m_BOOP == UNION) Intersection = !Intersection;
-					}
-					else
-					{
+					} else {
 						if(m_BOOP == MINUS) Intersection = !Intersection;
 					}
 				}
@@ -1561,7 +1482,7 @@ private:
 			//if Intersection == false, fA and fA2 are both inside or outside the second polyhedron.
 			if(!Intersection) stop = true;
 
-			//the intersection between (fA, fB2), (fA2, fB) and (fA2, fB2) are the same so these couples are removed from the list 
+			//the intersection between (fA, fB2), (fA2, fB) and (fA2, fB2) are the same so these couples are removed from the list
 			rmCouple(fA->Label, fB2->Label);
 			rmCouple(fA2->Label, fB->Label);
 			rmCouple(fA2->Label, fB2->Label);
@@ -1581,8 +1502,7 @@ private:
 
 		//the two intersection points between the edges of a triangle and the
 		//other triangle are computed for the two triangles
-		switch(posBbin)
-		{
+		switch(posBbin) {
 		//common intersections : one point one one side of the plane and the two other points on the other side
 		case 26:
 		case 37:
@@ -1652,9 +1572,8 @@ private:
 		default:
 			return;
 		}
-	
-		switch(posAbin)
-		{
+
+		switch(posAbin) {
 		//common intersections : one point one one side of the plane and the two other points on the other side
 		case 26:
 		case 37:
@@ -1724,10 +1643,9 @@ private:
 		default:
 			return;
 		}
-		
+
 		//if two distincts points belongs to the two triangles
-		if(IsSegment(inter))
-		{
+		if(IsSegment(inter)) {
 			//we get this segment in ptInter
 			std::vector<InterId> ptInter;
 			Get_Segment(inter, ptInter);
@@ -1735,12 +1653,10 @@ private:
 			vector<InterId> ptInterInv;
 			ptInterInv.push_back(ptInter[1]);
 			ptInterInv.push_back(ptInter[0]);
-			
+
 			//the segments are stored in the concerned triangles, and oriented
-			if(CGAL::cross_product(nA, nB) * (InterPts[ptInter[1]] - InterPts[ptInter[0]]) * ((invert_direction == true)?-1:1) > 0)
-			{
-				switch(m_BOOP)
-				{
+			if(CGAL::cross_product(nA, nB) * (InterPts[ptInter[1]] - InterPts[ptInter[0]]) * ((invert_direction == true)?-1:1) > 0) {
+				switch(m_BOOP) {
 				case UNION:
 					Inter_tri[fA->Label].CutList.push_back(ptInter);
 					if(edgeA != 3) Inter_tri[fA2->Label].CutList.push_back(ptInter);
@@ -1760,11 +1676,8 @@ private:
 					if(edgeB != 3) Inter_tri[fB2->Label].CutList.push_back(ptInter);
 					break;
 				}
-			}
-			else
-			{
-				switch(m_BOOP)
-				{
+			} else {
+				switch(m_BOOP) {
 				case UNION:
 					Inter_tri[fA->Label].CutList.push_back(ptInterInv);
 					if(edgeA != 3) Inter_tri[fA2->Label].CutList.push_back(ptInterInv);
@@ -1787,7 +1700,7 @@ private:
 			}
 		}
 	}
-	
+
 	/*! \brief Compute the intersection between a facet and a halfedge
 	 * \param inter : A pointer to an Info_Inter structure.*/
 	void InterTriangleSegment(Info_Inter* inter)
@@ -1795,8 +1708,7 @@ private:
 		Facet_handle f = inter->f;
 		Halfedge_handle he = inter->he;
 		//if the intersection has been computed, the function returns directly the Id of the intersection
-		if(Inter_tri[f->Label].RefInter.count(he->Label) != 0)
-		{
+		if(Inter_tri[f->Label].RefInter.count(he->Label) != 0) {
 			inter->Id = Inter_tri[f->Label].RefInter[he->Label];
 			return;
 		}
@@ -1824,22 +1736,19 @@ private:
 		tmp = (FT)1/(p*e1);
 		s = s1 - v0;
 		u = tmp * s * p;
-		if(u < 0 || u > 1)
-		{
+		if(u < 0 || u > 1) {
 			//the intersection is not in the triangle
 			inter->res = 7;
 			return;
 		}
 		q = CGAL::cross_product(s, e1);
 		v = tmp * dir * q;
-		if(v < 0 || v > 1)
-		{
+		if(v < 0 || v > 1) {
 			//the intersection is not in the triangle
 			inter->res = 7;
 			return;
 		}
-		if(u + v > 1)
-		{
+		if(u + v > 1) {
 			//the intersection is not in the triangle
 			inter->res = 7;
 			return;
@@ -1855,7 +1764,7 @@ private:
 		if(u+v == 1) inter->res += 4;	//intersection on he(2)
 	}
 
-	
+
 	/*! \brief Finds the position of a point in a 3d triangle
 	 * \param inter : A pointer to an Info_Inter structure*/
 	void IsInTriangle(Info_Inter* inter)
@@ -1863,8 +1772,7 @@ private:
 		Facet_handle f = inter->f;
 		Halfedge_handle he = inter->he;
 		//if the intersection has been computed, the function returns directly the Id of the intersection
-		if(Inter_tri[f->Label].RefInter.count(he->Label) != 0)
-		{
+		if(Inter_tri[f->Label].RefInter.count(he->Label) != 0) {
 			inter->Id = Inter_tri[f->Label].RefInter[he->Label];
 			return;
 		}
@@ -1884,28 +1792,25 @@ private:
 		FT u, v, w;
 
 		u = N * CGAL::cross_product(v0 - v2, p - v2);
-		if(u < 0)
-		{
+		if(u < 0) {
 			//the intersection is not in the triangle
 			inter->res = 7;
 			return;
 		}
 		v = N * CGAL::cross_product(v1 - v0, p - v0);
-		if(v < 0)
-		{
+		if(v < 0) {
 			//the intersection is not in the triangle
 			inter->res = 7;
 			return;
 		}
 		w = N * CGAL::cross_product(v2 - v1, p - v1);
-		if(w < 0)
-		{
+		if(w < 0) {
 			//the intersection is not in the triangle
 			inter->res = 7;
 			return;
 		}
 
-		//the point is in the triangle 
+		//the point is in the triangle
 		inter->pt = p;
 
 		//creation of the code for the location of the intersection
@@ -1914,36 +1819,32 @@ private:
 		if(v == 0) inter->res += 2;	//intersection on he(1)
 		if(w == 0) inter->res += 4;	//intersection on he(2)
 	}
-	
+
 	/*! \brief Verify that the intersection is a segment
 	 * \param inter : A pointer to four Info_Inter structures
 	 * \return true if two distinct points are found in the four intersections computed*/
-	bool IsSegment(Info_Inter *inter)
+	bool IsSegment(Info_Inter* inter)
 	{
 		bool point = false; //true if a point is founded
 		Point_3 pt; //the point founded
 		bool id = false; //true if an Id is founded
-                unsigned long Id = 0; //the Id founded // MT
+		unsigned long Id = 0; //the Id founded // MT
 
 		//each intersection is checked separately.
 		//first intersection
-		if(inter[0].Id != 0xFFFFFFFF)
-		{
+		if(inter[0].Id != 0xFFFFFFFF) {
 			//an Id different than 0xFFFFFFFF is founded
 			//this intersection has already been computed and is valid
 			id = true;
 			Id = inter[0].Id;
-		}
-		else if(inter[0].res != 7)
-		{
+		} else if(inter[0].res != 7) {
 			//the intersection have no Id (0xFFFFFFFF)
 			//but the intersection is in the triangle
 			point = true;
 			pt = inter[0].pt;
 		}
 		//second intersection
-		if(inter[1].Id != 0xFFFFFFFF)
-		{
+		if(inter[1].Id != 0xFFFFFFFF) {
 			//an Id different than 0xFFFFFFFF is founded
 			//this intersection has already been computed and is valid
 
@@ -1952,9 +1853,7 @@ private:
 			if(point || id) return true;
 			id = true;
 			Id = inter[1].Id;
-		}
-		else if(inter[1].res != 7)
-		{
+		} else if(inter[1].res != 7) {
 			//the intersection have no Id (0xFFFFFFFF)
 			//but the intersection is in the triangle
 
@@ -1965,8 +1864,7 @@ private:
 			pt = inter[1].pt;
 		}
 		//third intersection
-		if(inter[2].Id != 0xFFFFFFFF)
-		{
+		if(inter[2].Id != 0xFFFFFFFF) {
 			//an Id different than 0xFFFFFFFF is founded
 			//this intersection has already been computed and is valid
 
@@ -1975,9 +1873,7 @@ private:
 			if(point || (id && Id != inter[2].Id)) return true;
 			id = true;
 			Id = inter[2].Id;
-		}
-		else if(inter[2].res != 7)
-		{
+		} else if(inter[2].res != 7) {
 			//the intersection have no Id (0xFFFFFFFF)
 			//but the intersection is in the triangle
 
@@ -1988,17 +1884,14 @@ private:
 			pt = inter[2].pt;
 		}
 		//fourth intersection
-		if(inter[3].Id != 0xFFFFFFFF)
-		{
+		if(inter[3].Id != 0xFFFFFFFF) {
 			//an Id different than 0xFFFFFFFF is founded
 			//this intersection has already been computed and is valid
 
 			//if a point or a different Id has already be founded, we founded the two distinct valid points (the intersection is a segment)
 			//(it is not possible that the two first points are the same)
 			if(point || (id && Id != inter[3].Id)) return true;
-		}
-		else if(inter[3].res != 7)
-		{
+		} else if(inter[3].res != 7) {
 			//the intersection have no Id (0xFFFFFFFF)
 			//but the intersection is in the triangle
 
@@ -2008,28 +1901,24 @@ private:
 		}
 		return false;
 	}
-	
+
 	/*! \brief Extracts the segment from a set of four intersection points and store these points in the list of intersecion points
 	 * \n There must be two valid and distinct points in the set
 	 * \param inter : A pointer to four Info_Inter structure
 	 * \param I : A vector to store the Id of the two intersection points (the output segment)*/
-	void Get_Segment(Info_Inter *inter, std::vector<InterId> &I)
+	void Get_Segment(Info_Inter* inter, std::vector<InterId>& I)
 	{
-		for(unsigned int i = 0;i != 4;++i)
-		{
+		for(unsigned int i = 0; i != 4; ++i) {
 			//if the point have an Id
-			if(inter[i].Id != 0xFFFFFFFF)
-			{
+			if(inter[i].Id != 0xFFFFFFFF) {
 				//the Id is stored if it is not already done
 				if(I.size() == 0 || I[0] != inter[i].Id) I.push_back(inter[i].Id);
 			}
 			//else if the point is valid
-			else if(inter[i].res != 7)
-			{
+			else if(inter[i].res != 7) {
 				//the intersection point is stored in the list of the intersection points
 				//and its new Id is stored in the output segment
-				if(I.size() == 0 || InterPts[I[0]] != inter[i].pt)
-				{
+				if(I.size() == 0 || InterPts[I[0]] != inter[i].pt) {
 					Store_Intersection(&inter[i]);
 					I.push_back(inter[i].Id);
 				}
@@ -2038,10 +1927,10 @@ private:
 			if(I.size() == 2) return;
 		}
 	}
-	
+
 	/*! \brief Store the intersection and memorize it for every couples of facet-halfedge
 	 * \param inter : A pointer to an Info_Inter structure*/
-	void Store_Intersection(Info_Inter *inter)
+	void Store_Intersection(Info_Inter* inter)
 	{
 		Facet_handle f;
 		Halfedge_handle he;
@@ -2049,13 +1938,13 @@ private:
 		he = inter->he;
 		InterId I;
 
-		//store the point to the list of the intersections and store its new Id 
+		//store the point to the list of the intersections and store its new Id
 		inter->Id = InterPts.size();
 		I = inter->Id;
 		InterPts.push_back(inter->pt);
 
 		//add this point as a vertex of the result
-				ppbuilder.add_vertex(inter->pt, inter->Id);
+		ppbuilder.add_vertex(inter->pt, inter->Id);
 
 		//if the intersection is on the vertex pointed by the halfedge (he), we update the Id (Label) of this vertex
 		if(inter->IsOnVertex) he->vertex()->Label = I;
@@ -2063,270 +1952,237 @@ private:
 		//the intersection is memorized for each possible couple of (facet, halfedge) concerned by the intersection
 		//if the intersection is exactly on the vertex pointed by the halfedge (he), it is necessary to take account
 		//of every halfedge pointing to this vertex
-		switch(inter->res)
-		{
-		case 0: //intersection on the facet
-			{
-				if(!inter->IsOnVertex)
-				{
-					Inter_tri[f->Label].RefInter[he->Label] = I;
-					Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
-				}
-				else
-				{
-					Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
-					do {
-						Inter_tri[f->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
-						H_circ++;
-					} while(H_circ != H_end);
-				}
+		switch(inter->res) {
+		case 0: { //intersection on the facet
+			if(!inter->IsOnVertex) {
+				Inter_tri[f->Label].RefInter[he->Label] = I;
+				Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
+			} else {
+				Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
+				do {
+					Inter_tri[f->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
+					H_circ++;
+				} while(H_circ != H_end);
 			}
-			break;
-		case 1: //Intersection on the first halfedge of the facet
-			{
-				Inter_tri[f->Label].PtList.insert(I);
-				Inter_tri[f->facet_begin()->opposite()->facet()->Label].PtList.insert(I);
-				if(!inter->IsOnVertex)
-				{
-					Inter_tri[he->facet()->Label].PtList.insert(I);
-					Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
-					Inter_tri[f->Label].RefInter[he->Label] = I;
-					Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
-					Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[he->Label] = I;
-					Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[he->opposite()->Label] = I;
-					Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->Label] = I;
-					Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->opposite()->Label] = I;
-					Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->Label] = I;
-					Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->opposite()->Label] = I;
-				}
-				else
-				{
-					Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
-					do {
-						Inter_tri[f->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->opposite()->Label] = I;
-						H_circ++;
-					} while(H_circ != H_end);
-				}
+		}
+		break;
+		case 1: { //Intersection on the first halfedge of the facet
+			Inter_tri[f->Label].PtList.insert(I);
+			Inter_tri[f->facet_begin()->opposite()->facet()->Label].PtList.insert(I);
+			if(!inter->IsOnVertex) {
+				Inter_tri[he->facet()->Label].PtList.insert(I);
+				Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
+				Inter_tri[f->Label].RefInter[he->Label] = I;
+				Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
+				Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[he->Label] = I;
+				Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[he->opposite()->Label] = I;
+				Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->Label] = I;
+				Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->opposite()->Label] = I;
+				Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->Label] = I;
+				Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->opposite()->Label] = I;
+			} else {
+				Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
+				do {
+					Inter_tri[f->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[f->facet_begin()->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->opposite()->Label] = I;
+					H_circ++;
+				} while(H_circ != H_end);
 			}
-			break;
-		case 2: //Intersection on the second halfedge of the facet
-			{
-				Inter_tri[f->Label].PtList.insert(I);
-				Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].PtList.insert(I);
-				if(!inter->IsOnVertex)
-				{
-					Inter_tri[he->facet()->Label].PtList.insert(I);
-					Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
-					Inter_tri[f->Label].RefInter[he->Label] = I;
-					Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
-					Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[he->Label] = I;
-					Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[he->opposite()->Label] = I;
-					Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->Label] = I;
-					Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->opposite()->Label] = I;
-					Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->Label] = I;
-					Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->opposite()->Label] = I;
-				}
-				else
-				{
-					Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
-					do {
-						Inter_tri[f->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->opposite()->Label] = I;
-						H_circ++;
-					} while(H_circ != H_end);
-				}
+		}
+		break;
+		case 2: { //Intersection on the second halfedge of the facet
+			Inter_tri[f->Label].PtList.insert(I);
+			Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].PtList.insert(I);
+			if(!inter->IsOnVertex) {
+				Inter_tri[he->facet()->Label].PtList.insert(I);
+				Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
+				Inter_tri[f->Label].RefInter[he->Label] = I;
+				Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
+				Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[he->Label] = I;
+				Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[he->opposite()->Label] = I;
+				Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->Label] = I;
+				Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->opposite()->Label] = I;
+				Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->Label] = I;
+				Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->opposite()->Label] = I;
+			} else {
+				Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
+				do {
+					Inter_tri[f->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[f->facet_begin()->next()->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->opposite()->Label] = I;
+					H_circ++;
+				} while(H_circ != H_end);
 			}
-			break;
-		case 3: //Intersection on the first and second halfedge of the facet (vertex pointed by the first halfedge)
-			{
-				//update the Id (Label) of the first vertex of the facet
-				f->facet_begin()->vertex()->Label = I;
-				if(!inter->IsOnVertex)
-				{
-					Inter_tri[he->facet()->Label].PtList.insert(I);
-					Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
+		}
+		break;
+		case 3: { //Intersection on the first and second halfedge of the facet (vertex pointed by the first halfedge)
+			//update the Id (Label) of the first vertex of the facet
+			f->facet_begin()->vertex()->Label = I;
+			if(!inter->IsOnVertex) {
+				Inter_tri[he->facet()->Label].PtList.insert(I);
+				Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
 
-					Halfedge_around_vertex_circulator	H_circ = f->facet_begin()->vertex_begin(),
-														H_end = f->facet_begin()->vertex_begin();
+				Halfedge_around_vertex_circulator	H_circ = f->facet_begin()->vertex_begin(),
+													H_end = f->facet_begin()->vertex_begin();
+				do {
+					Inter_tri[H_circ->facet()->Label].RefInter[he->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[he->opposite()->Label] = I;
+					Inter_tri[he->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[he->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					H_circ++;
+				} while(H_circ != H_end);
+			} else {
+				Halfedge_around_vertex_circulator	H_circ = he->vertex_begin(),
+													H_end = he->vertex_begin();
+				do {
+					Halfedge_around_vertex_circulator	F_circ = f->facet_begin()->vertex_begin(),
+														F_end = f->facet_begin()->vertex_begin();
 					do {
-						Inter_tri[H_circ->facet()->Label].RefInter[he->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[he->opposite()->Label] = I;
-						Inter_tri[he->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[he->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						H_circ++;
-					} while(H_circ != H_end);
-				}
-				else
-				{
-					Halfedge_around_vertex_circulator	H_circ = he->vertex_begin(),
-														H_end = he->vertex_begin();
-					do {
-						Halfedge_around_vertex_circulator	F_circ = f->facet_begin()->vertex_begin(),
-															F_end = f->facet_begin()->vertex_begin();
-						do {
-							Inter_tri[F_circ->facet()->Label].RefInter[H_circ->Label] = I;
-							Inter_tri[F_circ->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-							Inter_tri[H_circ->facet()->Label].RefInter[F_circ->Label] = I;
-							Inter_tri[H_circ->facet()->Label].RefInter[F_circ->opposite()->Label] = I;
-							F_circ++;
-						} while(F_circ != F_end);
-						H_circ++;
-					} while(H_circ != H_end);
-				}
+						Inter_tri[F_circ->facet()->Label].RefInter[H_circ->Label] = I;
+						Inter_tri[F_circ->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+						Inter_tri[H_circ->facet()->Label].RefInter[F_circ->Label] = I;
+						Inter_tri[H_circ->facet()->Label].RefInter[F_circ->opposite()->Label] = I;
+						F_circ++;
+					} while(F_circ != F_end);
+					H_circ++;
+				} while(H_circ != H_end);
 			}
-			break;
-		case 4: //Intersection on the third halfedge of the facet
-			{
-				Inter_tri[f->Label].PtList.insert(I);
-				Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].PtList.insert(I);
-				if(!inter->IsOnVertex)
-				{
-					Inter_tri[he->facet()->Label].PtList.insert(I);
-					Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
-					Inter_tri[f->Label].RefInter[he->Label] = I;
-					Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
-					Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[he->Label] = I;
-					Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[he->opposite()->Label] = I;
-					Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->next()->Label] = I;
-					Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->next()->opposite()->Label] = I;
-					Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->next()->Label] = I;
-					Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->next()->opposite()->Label] = I;
-				}
-				else
-				{
-					Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
-					do {
-						Inter_tri[f->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->next()->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->next()->opposite()->Label] = I;
-						H_circ++;
-					} while(H_circ != H_end);
-				}
+		}
+		break;
+		case 4: { //Intersection on the third halfedge of the facet
+			Inter_tri[f->Label].PtList.insert(I);
+			Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].PtList.insert(I);
+			if(!inter->IsOnVertex) {
+				Inter_tri[he->facet()->Label].PtList.insert(I);
+				Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
+				Inter_tri[f->Label].RefInter[he->Label] = I;
+				Inter_tri[f->Label].RefInter[he->opposite()->Label] = I;
+				Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[he->Label] = I;
+				Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[he->opposite()->Label] = I;
+				Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->next()->Label] = I;
+				Inter_tri[he->facet()->Label].RefInter[f->facet_begin()->next()->next()->opposite()->Label] = I;
+				Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->next()->Label] = I;
+				Inter_tri[he->opposite()->facet()->Label].RefInter[f->facet_begin()->next()->next()->opposite()->Label] = I;
+			} else {
+				Halfedge_around_vertex_circulator H_circ = he->vertex_begin(), H_end = he->vertex_begin();
+				do {
+					Inter_tri[f->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[f->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[f->facet_begin()->next()->next()->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->next()->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[f->facet_begin()->next()->next()->opposite()->Label] = I;
+					H_circ++;
+				} while(H_circ != H_end);
 			}
-			break;
-		case 5: //Intersection on the first and third halfedge of the facet (vertex pointed by the third halfedge)
-			{
-				//update the Id (Label) of the third vertex of the facet
-				f->facet_begin()->next()->next()->vertex()->Label = I;
-				if(!inter->IsOnVertex)
-				{
-					Inter_tri[he->facet()->Label].PtList.insert(I);
-					Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
+		}
+		break;
+		case 5: { //Intersection on the first and third halfedge of the facet (vertex pointed by the third halfedge)
+			//update the Id (Label) of the third vertex of the facet
+			f->facet_begin()->next()->next()->vertex()->Label = I;
+			if(!inter->IsOnVertex) {
+				Inter_tri[he->facet()->Label].PtList.insert(I);
+				Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
 
-					Halfedge_around_vertex_circulator	H_circ = f->facet_begin()->next()->next()->vertex_begin(),
-														H_end = f->facet_begin()->next()->next()->vertex_begin();
+				Halfedge_around_vertex_circulator	H_circ = f->facet_begin()->next()->next()->vertex_begin(),
+													H_end = f->facet_begin()->next()->next()->vertex_begin();
+				do {
+					Inter_tri[H_circ->facet()->Label].RefInter[he->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[he->opposite()->Label] = I;
+					Inter_tri[he->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[he->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					H_circ++;
+				} while(H_circ != H_end);
+			} else {
+				Halfedge_around_vertex_circulator 	H_circ = he->vertex_begin(),
+													H_end = he->vertex_begin();
+				do {
+					Halfedge_around_vertex_circulator 	F_circ = f->facet_begin()->next()->next()->vertex_begin(),
+														F_end = f->facet_begin()->next()->next()->vertex_begin();
 					do {
-						Inter_tri[H_circ->facet()->Label].RefInter[he->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[he->opposite()->Label] = I;
-						Inter_tri[he->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[he->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						H_circ++;
-					} while(H_circ != H_end);
-				}
-				else
-				{
-					Halfedge_around_vertex_circulator 	H_circ = he->vertex_begin(),
-														H_end = he->vertex_begin();
-					do {
-						Halfedge_around_vertex_circulator 	F_circ = f->facet_begin()->next()->next()->vertex_begin(),
-															F_end = f->facet_begin()->next()->next()->vertex_begin();
-						do {
-							Inter_tri[F_circ->facet()->Label].RefInter[H_circ->Label] = I;
-							Inter_tri[F_circ->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-							Inter_tri[H_circ->facet()->Label].RefInter[F_circ->Label] = I;
-							Inter_tri[H_circ->facet()->Label].RefInter[F_circ->opposite()->Label] = I;
-							F_circ++;
-						} while(F_circ != F_end);
-						H_circ++;
-					} while(H_circ != H_end);
-				}
+						Inter_tri[F_circ->facet()->Label].RefInter[H_circ->Label] = I;
+						Inter_tri[F_circ->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+						Inter_tri[H_circ->facet()->Label].RefInter[F_circ->Label] = I;
+						Inter_tri[H_circ->facet()->Label].RefInter[F_circ->opposite()->Label] = I;
+						F_circ++;
+					} while(F_circ != F_end);
+					H_circ++;
+				} while(H_circ != H_end);
 			}
-			break;
-		case 6: //Intersection on the second and third halfedge of the facet (vertex pointed by the second halfedge)
-			{
-				//update the Id (Label) of the second vertex of the facet
-				f->facet_begin()->next()->vertex()->Label = I;
-				if(!inter->IsOnVertex)
-				{
-					Inter_tri[he->facet()->Label].PtList.insert(I);
-					Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
+		}
+		break;
+		case 6: { //Intersection on the second and third halfedge of the facet (vertex pointed by the second halfedge)
+			//update the Id (Label) of the second vertex of the facet
+			f->facet_begin()->next()->vertex()->Label = I;
+			if(!inter->IsOnVertex) {
+				Inter_tri[he->facet()->Label].PtList.insert(I);
+				Inter_tri[he->opposite()->facet()->Label].PtList.insert(I);
 
-					Halfedge_around_vertex_circulator	H_circ = f->facet_begin()->next()->vertex_begin(),
-														H_end = f->facet_begin()->next()->vertex_begin();
+				Halfedge_around_vertex_circulator	H_circ = f->facet_begin()->next()->vertex_begin(),
+													H_end = f->facet_begin()->next()->vertex_begin();
+				do {
+					Inter_tri[H_circ->facet()->Label].RefInter[he->Label] = I;
+					Inter_tri[H_circ->facet()->Label].RefInter[he->opposite()->Label] = I;
+					Inter_tri[he->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[he->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
+					Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+					H_circ++;
+				} while(H_circ != H_end);
+			} else {
+				Halfedge_around_vertex_circulator	H_circ = he->vertex_begin(),
+													H_end = he->vertex_begin();
+				do {
+					Halfedge_around_vertex_circulator	F_circ = f->facet_begin()->next()->vertex_begin(),
+														F_end = f->facet_begin()->next()->vertex_begin();
 					do {
-						Inter_tri[H_circ->facet()->Label].RefInter[he->Label] = I;
-						Inter_tri[H_circ->facet()->Label].RefInter[he->opposite()->Label] = I;
-						Inter_tri[he->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[he->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->Label] = I;
-						Inter_tri[he->opposite()->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-						H_circ++;
-					} while(H_circ != H_end);
-				}
-				else
-				{
-					Halfedge_around_vertex_circulator	H_circ = he->vertex_begin(),
-														H_end = he->vertex_begin();
-					do {
-						Halfedge_around_vertex_circulator	F_circ = f->facet_begin()->next()->vertex_begin(),
-															F_end = f->facet_begin()->next()->vertex_begin();
-						do {
-							Inter_tri[F_circ->facet()->Label].RefInter[H_circ->Label] = I;
-							Inter_tri[F_circ->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
-							Inter_tri[H_circ->facet()->Label].RefInter[F_circ->Label] = I;
-							Inter_tri[H_circ->facet()->Label].RefInter[F_circ->opposite()->Label] = I;
-							F_circ++;
-						} while(F_circ != F_end);
-						H_circ++;
-					} while(H_circ != H_end);
-				}
+						Inter_tri[F_circ->facet()->Label].RefInter[H_circ->Label] = I;
+						Inter_tri[F_circ->facet()->Label].RefInter[H_circ->opposite()->Label] = I;
+						Inter_tri[H_circ->facet()->Label].RefInter[F_circ->Label] = I;
+						Inter_tri[H_circ->facet()->Label].RefInter[F_circ->opposite()->Label] = I;
+						F_circ++;
+					} while(F_circ != F_end);
+					H_circ++;
+				} while(H_circ != H_end);
 			}
-			break;
+		}
+		break;
 		}
 
 	}
-	
+
 	/*! \brief Add a facet to the result
 	 * \param pFacet : A handle to the facet to add
 	 * \param facet_from_A : must be true if the facet belongs to the first polyhedron*/
-	void add_facet_to_solution(Facet_handle &pFacet, bool facet_from_A)
+	void add_facet_to_solution(Facet_handle& pFacet, bool facet_from_A)
 	{
 		//if the facet contains an intersection point but no intersection segment, the facet must be triangulate before
-		if(pFacet->Label < Inter_tri.size())
-		{
+		if(pFacet->Label < Inter_tri.size()) {
 			Triangle_Cut TriCut = Inter_tri[pFacet->Label];
 			Halfedge_handle he = pFacet->facet_begin();
 			//creation of the triangulation
 			Triangulation<Kernel> T(he, TriCut.norm_dir);
 			//add the intersection points to the triangulation
-			for(std::set<InterId>::iterator i = TriCut.PtList.begin();i != TriCut.PtList.end();++i)
-			{
-                            T.add_new_pt(InterPts[*i], (unsigned long &)*i);    // MT: ajout cast
+			for(std::set<InterId>::iterator i = TriCut.PtList.begin(); i != TriCut.PtList.end(); ++i) {
+				T.add_new_pt(InterPts[*i], (unsigned long&)*i);     // MT: ajout cast
 			}
 			//get all the triangles of the triangulation
-                        vector<vector<unsigned long> > Tri_set = T.get_all_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false);
+			vector<vector<unsigned long> > Tri_set = T.get_all_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false);
 			//add these triangles to the result
 			ppbuilder.add_triangle(Tri_set, he);
-		}
-		else
-		{
+		} else {
 			//the facet is added to the result. If the facet belongs to the second polyhedron, and if the
 			//Boolean operation is a Subtraction, it is necessary to invert the orientation of the facet.
 			if(m_BOOP == MINUS && !facet_from_A) ppbuilder.add_triangle(pFacet, true);
@@ -2336,10 +2192,10 @@ private:
 		pFacet->facet_begin()->opposite()->facet()->IsExt = true;
 		pFacet->facet_begin()->next()->opposite()->facet()->IsExt = true;
 		pFacet->facet_begin()->next()->next()->opposite()->facet()->IsExt = true;
-	} 
-	
+	}
+
 #ifdef BOOLEAN_OPERATIONS_DEBUG
-	
+
 	/*! \brief Colors the facets of the input polyhedra
 	 * \n The intersected facets are red
 	 * \n The facets that belong to the result are in green
@@ -2347,24 +2203,22 @@ private:
 	void ColorType()
 	{
 		Facet_iterator pFacet =	NULL;
-		for (pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
-		{
+		for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++) {
 			if(pFacet->Label < Inter_tri.size()) pFacet->color(1.0, 0.0 ,0.0);
 			else if(pFacet->IsExt) pFacet->color(0.0, 1.0 ,0.0);
 			else pFacet->color(0.0, 0.0 ,1.0);
 		}
-		for (pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
-		{
+		for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++) {
 			if(pFacet->Label < Inter_tri.size()) pFacet->color(1.0, 0.0 ,0.0);
 			else if(pFacet->IsExt) pFacet->color(0.0, 1.0 ,0.0);
 			else pFacet->color(0.0, 0.0 ,1.0);
 		}
 	}
 
-	
+
 	/*! \brief Writes a report containing the computation time of the diffrent parts of the algorithm
 	 * \param pMout : The result polyhedron*/
-	void WriteData(PolyhedronPtr &pMout)
+	void WriteData(PolyhedronPtr& pMout)
 	{
 		unsigned int N_IFA = 0;
 		unsigned int N_FFA = 0;
@@ -2374,14 +2228,12 @@ private:
 		unsigned int N_LFFB = 0;
 		unsigned int N_CF;
 
-		for(Facet_iterator pFacet = m_pA->facets_begin();pFacet != m_pA->facets_end();++pFacet)
-		{
+		for(Facet_iterator pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); ++pFacet) {
 			if(pFacet->Label < Inter_tri.size()) N_IFA++;
 			else if(pFacet->IsExt) N_FFA++;
 			else N_LFFA++;
 		}
-		for(Facet_iterator pFacet = m_pB->facets_begin();pFacet != m_pB->facets_end();++pFacet)
-		{
+		for(Facet_iterator pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); ++pFacet) {
 			if(pFacet->Label < Inter_tri.size()) N_IFB++;
 			else if(pFacet->IsExt) N_FFB++;
 			else N_LFFB++;
@@ -2419,9 +2271,9 @@ private:
 		ofstrtime << "Number of Facets from B :            "	<< N_FFB								<< std::endl;
 		ofstrtime << "Number of Created Facets :           "	<< N_CF									<< std::endl;
 	}
-	
+
 #endif // BOOLEAN_OPERATIONS_DEBUG
-	
+
 	/*! \brief Boolean operation computed*/
 	Bool_Op m_BOOP;
 	/*! \brief The first input polyhedron*/
@@ -2432,7 +2284,7 @@ private:
 	CPolyhedron_from_polygon_builder_3<HDS> ppbuilder;
 
 	/*! \brief Lists the couples of facets that intersect*/
-        std::map<FacetId, std::set<FacetId> > m_Couples;
+	std::map<FacetId, std::set<FacetId> > m_Couples;
 	/*! \brief Lists the exact intersection points computed*/
 	vector<Point_3> InterPts;
 	/*! \brief Informations about the intersected facets*/
@@ -2444,7 +2296,7 @@ private:
 	AABB_Tree tree;
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
-	
+
 	/*! \brief The output report file*/
 	std::ofstream ofstrtime;
 	/*! \brief Initialisation time*/
@@ -2461,7 +2313,7 @@ private:
 	double duration_delegate;
 	/*! \brief Time to Compute a Boolean operation*/
 	double duration_total;
-	
+
 #endif // BOOLEAN_OPERATIONS_DEBUG
 };
 
