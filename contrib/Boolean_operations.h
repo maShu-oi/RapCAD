@@ -149,21 +149,14 @@ public:
 
 
 typedef Enriched_polyhedron<Enriched_kernel, Enriched_items>	MEPP_Polyhedron;
-typedef MEPP_Polyhedron::Point_3 Point3d;
 typedef MEPP_Polyhedron::Vertex Vertex;
-typedef MEPP_Polyhedron::Vertex_handle Vertex_handle;
 typedef MEPP_Polyhedron::Vertex_iterator Vertex_iterator;
 typedef MEPP_Polyhedron::Halfedge_handle Halfedge_handle;
-typedef MEPP_Polyhedron::Halfedge_iterator Halfedge_iterator;
-typedef MEPP_Polyhedron::HalfedgeDS HalfedgeDS;
-typedef MEPP_Polyhedron::Edge_iterator Edge_iterator;
 typedef MEPP_Polyhedron::Facet Facet;
 typedef MEPP_Polyhedron::Facet_handle Facet_handle;
 typedef MEPP_Polyhedron::Facet_iterator Facet_iterator;
 typedef Vertex::Halfedge_around_vertex_circulator Halfedge_around_vertex_circulator;
 typedef Facet::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
-typedef CGAL::Vector_3<Enriched_kernel> Vector;
-typedef CGAL::Aff_transformation_3<Enriched_kernel> Affine_transformation;
 typedef MEPP_Polyhedron* PolyhedronPtr;
 
 #include <CGAL/Gmpq.h>
@@ -349,7 +342,7 @@ public:
 	 * \param p : The point to add
 	 * \param l : The corresponding label
 	 */
-		void add_vertex(Point3d p, unsigned long &l)    // MT: suppression référence
+		void add_vertex(Point_3 p, unsigned long &l)    // MT: suppression référence
 	{
 		//The value of the label is updated
 		l = m_Sorted_vertices.size();
@@ -889,9 +882,9 @@ typedef CGAL::AABB_tree<AABB_Traits>												AABB_Tree;
  * \brief The class that compute a Boolean operation*/
 template <typename Kernel>
 class BoolPolyhedra {
-		typedef typename Kernel::FT	num_type;
-		typedef typename Kernel::Point_3 Point3d_exact;
-		typedef typename Kernel::Vector_3 Vector_exact;
+		typedef typename Kernel::FT	FT;
+		typedef typename Kernel::Point_3 Point_3;
+		typedef typename Kernel::Vector_3 Vector_3;
 private:
 	/*! \struct Triangle_Cut
 	 * \brief A structure containing informations about an intersected facet*/
@@ -899,7 +892,7 @@ private:
 		/*! \brief true if the facet belongs to the first polyhedron*/
 		bool								Facet_from_A;
 		/*! \brief An exact vector giving the direction of the normal*/
-		Vector_exact						norm_dir;
+		Vector_3						norm_dir;
 		/*! \brief A list of segments (the intersections with the facets of the other polyhedron)*/
                 std::vector<std::vector<InterId> >	CutList;
 		/*! \brief A list of points (when the intersection is a point)*/
@@ -912,7 +905,7 @@ private:
                 /*! \brief Constructor
                  \param V : The normal direction
                  \param ffA : Must be true if the facet belongs to the first polyhedron*/
-                Triangle_Cut(Vector_exact V, bool ffA) { norm_dir=V; Facet_from_A=ffA; } // MT
+				Triangle_Cut(Vector_3 V, bool ffA) { norm_dir=V; Facet_from_A=ffA; } // MT
 	};
 	
 	/*! \struct Info_Inter
@@ -935,7 +928,7 @@ private:
 		 * 7 : There is no intersection */
 		unsigned short		res;
 		/*! \brief The intersection point (exact)*/
-		Point3d_exact		pt;
+		Point_3		pt;
 		/*! \brief The Id of the intersection point*/
 		InterId				Id;
 	};
@@ -1021,7 +1014,7 @@ private:
 	 * \param he : A Halfedge incident to the facet
 	 * \return The normal direction (exact).
 	 */
-	inline Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression référence
+	inline Vector_3 Compute_Normal_direction(Halfedge_handle he)   // MT: suppression référence
 	{
 		return CGAL::cross_product(	he->next()->vertex()->point() - he->vertex()->point(),
 									he->next()->next()->vertex()->point() - he->vertex()->point());
@@ -1304,7 +1297,7 @@ private:
 	 * \param B : Facet Id of the second facet (from the second polyhedron)*/
 	void InterTriangleTriangle(FacetId &A, FacetId &B)
 	{
-		Vector_exact nA, nB;
+		Vector_3 nA, nB;
 		nA = Inter_tri[A].norm_dir;
 		nB = Inter_tri[B].norm_dir;
 
@@ -1320,7 +1313,7 @@ private:
 		heB[1] = heB[0]->next();
 		heB[2] = heB[1]->next();
 
-		Point3d_exact ptA[3], ptB[3];
+		Point_3 ptA[3], ptB[3];
 		ptA[0] = heA[0]->vertex()->point();
 		ptA[1] = heA[1]->vertex()->point();
 		ptA[2] = heA[2]->vertex()->point();
@@ -1332,7 +1325,7 @@ private:
 		//positive if the vertex is above
 		//negative if the vertex is under
 		//zero if the vertex is exactly on the triangle
-		num_type posA[3], posB[3];
+		FT posA[3], posB[3];
 		posA[0] = nB * (ptA[0] - ptB[0]);
 		posA[1] = nB * (ptA[1] - ptB[0]);
 		posA[2] = nB * (ptA[2] - ptB[0]);
@@ -1383,8 +1376,8 @@ private:
 		else if(posBbin == 16 || posBbin == 32) edgeB = 2; //points 1 and 2 on the plane
 		else if(posBbin == 4  || posBbin == 8 ) edgeB = 0; //points 2 and 0 on the plane
 
-		Vector_exact nA2, nB2;
-		num_type p;
+		Vector_3 nA2, nB2;
+		FT p;
 		bool invert_direction = false;
 		bool stop = false;
 
@@ -1455,10 +1448,10 @@ private:
 			//fA2 and fB2 are the two other concerned facets
 			//we try to determine if fA and fA2 are inside or outside the second polyhedron, using fB and fB2
 			bool Intersection = false;
-			Vector_exact nAcnB2, nA2cnB;
-			num_type nAnB2, nA2nB, nA2nB2;
-			num_type posA2_A, posB_A, posB2_A, posB_B2, posA_B, posB2_B, posB_A2, posB2_A2, posA2_B, posA2_B2;
-			Point3d_exact ptA2, ptB2;
+			Vector_3 nAcnB2, nA2cnB;
+			FT nAnB2, nA2nB, nA2nB2;
+			FT posA2_A, posB_A, posB2_A, posB_B2, posA_B, posB2_B, posB_A2, posB2_A2, posA2_B, posA2_B2;
+			Point_3 ptA2, ptB2;
 
 			fA2 = heA[edgeA]->opposite()->facet();
 			fB2 = heB[edgeB]->opposite()->facet();
@@ -1814,21 +1807,21 @@ private:
 		//the intersection does not have an Id. 0xFFFFFFFF is set (this value means "no Id")
 		inter->Id = 0xFFFFFFFF;
 
-		Vector_exact e1, e2, dir, p, s, q;
-		num_type u, v, tmp;
+		Vector_3 e1, e2, dir, p, s, q;
+		FT u, v, tmp;
 
-		Point3d_exact s1 = he->opposite()->vertex()->point();
-		Point3d_exact s2 = he->vertex()->point();
-		Point3d_exact v0 = f->facet_begin()->vertex()->point();
-		Point3d_exact v1 = f->facet_begin()->next()->vertex()->point();
-		Point3d_exact v2 = f->facet_begin()->next()->next()->vertex()->point();
+		Point_3 s1 = he->opposite()->vertex()->point();
+		Point_3 s2 = he->vertex()->point();
+		Point_3 v0 = f->facet_begin()->vertex()->point();
+		Point_3 v1 = f->facet_begin()->next()->vertex()->point();
+		Point_3 v2 = f->facet_begin()->next()->next()->vertex()->point();
 
 		//computation of the intersection (exact numbers)
 		e1 = v1 - v0;
 		e2 = v2 - v0;
 		dir = s2 - s1;
 		p = CGAL::cross_product(dir, e2);
-		tmp = (num_type)1/(p*e1);
+		tmp = (FT)1/(p*e1);
 		s = s1 - v0;
 		u = tmp * s * p;
 		if(u < 0 || u > 1)
@@ -1882,13 +1875,13 @@ private:
 		//the intersection does not have an Id. 0xFFFFFFFF is set (this value means "no Id")
 		inter->Id = 0xFFFFFFFF;
 
-		Point3d_exact p = he->vertex()->point();
-		Point3d_exact v0 = f->facet_begin()->vertex()->point();
-		Point3d_exact v1 = f->facet_begin()->next()->vertex()->point();
-		Point3d_exact v2 = f->facet_begin()->next()->next()->vertex()->point();
+		Point_3 p = he->vertex()->point();
+		Point_3 v0 = f->facet_begin()->vertex()->point();
+		Point_3 v1 = f->facet_begin()->next()->vertex()->point();
+		Point_3 v2 = f->facet_begin()->next()->next()->vertex()->point();
 
-		Vector_exact N = Inter_tri[f->Label].norm_dir;
-		num_type u, v, w;
+		Vector_3 N = Inter_tri[f->Label].norm_dir;
+		FT u, v, w;
 
 		u = N * CGAL::cross_product(v0 - v2, p - v2);
 		if(u < 0)
@@ -1928,7 +1921,7 @@ private:
 	bool IsSegment(Info_Inter *inter)
 	{
 		bool point = false; //true if a point is founded
-		Point3d_exact pt; //the point founded
+		Point_3 pt; //the point founded
 		bool id = false; //true if an Id is founded
                 unsigned long Id = 0; //the Id founded // MT
 
@@ -2441,7 +2434,7 @@ private:
 	/*! \brief Lists the couples of facets that intersect*/
         std::map<FacetId, std::set<FacetId> > m_Couples;
 	/*! \brief Lists the exact intersection points computed*/
-	vector<Point3d_exact> InterPts;
+	vector<Point_3> InterPts;
 	/*! \brief Informations about the intersected facets*/
 	vector<Triangle_Cut> Inter_tri;
 	/*! \brief Index to obtain the handle of a facet with its Id*/
