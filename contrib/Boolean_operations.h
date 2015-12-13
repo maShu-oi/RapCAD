@@ -373,7 +373,7 @@ private:
 };
 
 #include <CGAL/Triangulation_2.h>
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Constrained_triangulation_2.h>
 
 /*!
  * \class Enriched_vertex_base
@@ -512,34 +512,34 @@ class Triangulation
 	typedef typename CGAL::No_intersection_tag										Itag;
 
 	/*!
-	 * \typedef typename Constrained_Delaunay_tri
-	 * \brief 2d constrained Delaunay triangulation
+	 * \typedef typename Constrained_tri
+	 * \brief 2d constrained triangulation
 	 */
-	typedef typename CGAL::Constrained_Delaunay_triangulation_2<K, Tri_DS, Itag>	Constrained_Delaunay_tri;
+	typedef typename CGAL::Constrained_triangulation_2<K, Tri_DS, Itag>	Constrained_tri;
 
 	/*!
 	 * \typedef typename Vertex_handle_tri
 	 * \brief Vertex handle for the triangulation
 	 */
-	typedef typename Constrained_Delaunay_tri::Vertex_handle						Vertex_handle_tri;
+	typedef typename Constrained_tri::Vertex_handle						Vertex_handle_tri;
 
 	/*!
 	 * \typedef typename Face_handle_tri
 	 * \brief Face handle for the triangulation
 	 */
-	typedef typename Constrained_Delaunay_tri::Face_handle							Face_handle_tri;
+	typedef typename Constrained_tri::Face_handle							Face_handle_tri;
 
 	/*!
 	 * \typedef typename Point_tri
 	 * \brief 2d point for the triangulation
 	 */
-	typedef typename Constrained_Delaunay_tri::Point								Point_tri;
+	typedef typename Constrained_tri::Point								Point_tri;
 
 	/*!
 	 * \typedef typename Face_iterator_tri
 	 * \brief Iterator for the faces of the triangulation
 	 */
-	typedef typename Constrained_Delaunay_tri::Face_iterator						Face_iterator_tri;
+	typedef typename Constrained_tri::Face_iterator						Face_iterator_tri;
 
 
 	typedef typename CGAL::Polyhedron_3<K,Enriched_items> M;
@@ -767,7 +767,7 @@ public:
 
 private:
 	/*! \brief The triangulation*/
-	Constrained_Delaunay_tri ct;
+	Constrained_tri ct;
 	/*! \brief List of the id of the points added in the triangulation*/
 	std::vector<InterId> pts_point;
 	/*! \brief List of the handles of the points added in the triangulation*/
