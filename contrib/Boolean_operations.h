@@ -3,7 +3,7 @@
  *
  *   Author Cyril Leconte and Giles Bathgate
  *
- *   Original work Copyright (C) 2011 Cyril Leconte
+ *   Original work Copyright (C) 2010 Cyril Leconte
  *   Modified work Copyright (C) 2015 Giles Bathgate
  *
  *   This program is free software: you can redistribute it and/or modify
