@@ -1,10 +1,26 @@
+/*
+ *   Boolean_operations.h
+ *
+ *   Author Cyril Leconte and Giles Bathgate
+ *
+ *   Original work Copyright (C) 2011 Cyril Leconte
+ *   Modified work Copyright (C) 2015 Giles Bathgate
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef BOOLEAN_OPERATIONS_H
 #define BOOLEAN_OPERATIONS_H
-
-/*!
- * \file Boolean_operations.h
- * \author Cyril Leconte
- */
 
 #include <CGAL/IO/Polyhedron_iostream.h>
 #include <CGAL/AABB_tree.h>
@@ -141,19 +157,7 @@ public:
 
 
 typedef Enriched_polyhedron<Enriched_kernel, Enriched_items>	MEPP_Polyhedron;
-typedef MEPP_Polyhedron::Vertex Vertex;
-typedef MEPP_Polyhedron::Vertex_iterator Vertex_iterator;
-typedef MEPP_Polyhedron::Halfedge_handle Halfedge_handle;
-typedef MEPP_Polyhedron::Facet Facet;
 typedef MEPP_Polyhedron::Facet_handle Facet_handle;
-typedef MEPP_Polyhedron::Facet_iterator Facet_iterator;
-typedef Vertex::Halfedge_around_vertex_circulator Halfedge_around_vertex_circulator;
-typedef Facet::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
-typedef MEPP_Polyhedron* PolyhedronPtr;
-
-#include <CGAL/Gmpq.h>
-#include <CGAL/Lazy_exact_nt.h>
-
 
 /*!
  * \def BOOLEAN_OPERATIONS_DEBUG
@@ -213,6 +217,10 @@ public:
 	 * \brief The polyhedron incremental builder
 	 */
 	typedef typename CGAL::Polyhedron_incremental_builder_3<HDS>			Builder;
+
+	typedef typename Builder::Halfedge_handle Halfedge_handle;
+
+	typedef typename Builder::Facet_handle Facet_handle;
 
 private:
 	// Member variables
@@ -539,6 +547,9 @@ class Triangulation
 	 */
 	typedef typename Constrained_Delaunay_tri::Face_iterator						Face_iterator_tri;
 
+
+	typedef typename CGAL::Polyhedron_3<K,Enriched_items> M;
+	typedef typename M::Halfedge_handle Halfedge_handle;
 public:
 	/*!
 	 * \brief Constructor
@@ -792,9 +803,6 @@ private:
 #include "Time_measure.h"
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
-/*! \typedef HDS
- * \brief Halfedge data structure*/
-typedef MEPP_Polyhedron::HalfedgeDS								HDS;
 /*! \typedef AABB_Kernel
  * \brief Kernel used for the computations in a AABB-tree*/
 //typedef CGAL::Simple_cartesian<num_type>					AABB_Kernel;
@@ -802,6 +810,7 @@ typedef CGAL::Simple_cartesian<double>					AABB_Kernel;
 
 /*! \class Enriched_Triangle
  * \brief An enriched triangle*/
+template <typename Kernel>
 class Enriched_Triangle : public AABB_Kernel::Triangle_3
 {
 public:
@@ -836,7 +845,7 @@ public:
 	 * \param p : The point to convert
 	 * \return The 3d point converted
 	 */
-	inline Point_3 to_K(Enriched_kernel::Point_3 p)
+	inline Point_3 to_K(typename Kernel::Point_3 p)
 	{
 		return Point_3(to_double(p.x()),to_double(p.y()),to_double(p.z()));
 	}  // MT: suppression référence
@@ -846,9 +855,15 @@ private:
 	Facet_handle f;
 };
 
+/*! \class BoolPolyhedra
+ * \brief The class that compute a Boolean operation*/
+template <typename Kernel, typename Items>
+class BoolPolyhedra
+{
+
 /*! \typedef Triangle
  * \brief A triangle enriched with a facet handle*/
-typedef Enriched_Triangle															Triangle;
+typedef Enriched_Triangle<Enriched_kernel> Triangle;
 /*! \typedef AABB_Primitive
  * \brief A primitive for an AABB-tree*/
 typedef CGAL::AABB_triangle_primitive<AABB_Kernel,std::list<Triangle>::iterator>	AABB_Primitive;
@@ -859,14 +874,24 @@ typedef CGAL::AABB_traits<AABB_Kernel, AABB_Primitive>								AABB_Traits;
  * \brief AABB-tree*/
 typedef CGAL::AABB_tree<AABB_Traits>												AABB_Tree;
 
-/*! \class BoolPolyhedra
- * \brief The class that compute a Boolean operation*/
-template <typename Kernel>
-class BoolPolyhedra
-{
+
+
 	typedef typename Kernel::FT	FT;
 	typedef typename Kernel::Point_3 Point_3;
 	typedef typename Kernel::Vector_3 Vector_3;
+
+	typedef typename CGAL::Polyhedron_3<Kernel,Items> Polyhedron_3;
+	typedef typename Polyhedron_3::Vertex Vertex;
+	typedef typename Polyhedron_3::Facet Facet;
+	typedef typename Polyhedron_3::HalfedgeDS HDS;
+
+	typedef typename Polyhedron_3::Vertex_iterator Vertex_iterator;
+	typedef typename Polyhedron_3::Facet_iterator Facet_iterator;
+
+	typedef typename Polyhedron_3::Halfedge_handle Halfedge_handle;
+
+	typedef typename Vertex::Halfedge_around_vertex_circulator Halfedge_around_vertex_circulator;
+	typedef typename Facet::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
 private:
 	/*! \struct Triangle_Cut
 	 * \brief A structure containing informations about an intersected facet*/
@@ -926,7 +951,7 @@ public:
 	 * \param pMB : The second polyhedron
 	 * \param pMout : The result polyhedron
 	 * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-	BoolPolyhedra(PolyhedronPtr& pMA, PolyhedronPtr& pMB, PolyhedronPtr& pMout, Bool_Op BOOP) : m_BOOP(BOOP)
+	BoolPolyhedra(MEPP_Polyhedron*& pMA, MEPP_Polyhedron*& pMB, MEPP_Polyhedron*& pMout, Bool_Op BOOP) : m_BOOP(BOOP)
 	{
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
@@ -1010,7 +1035,7 @@ private:
 	/*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
 	 * \param pMA : The first polyhedron
 	 * \param pMB : The second polyhedron*/
-	void Init(PolyhedronPtr& pMA, PolyhedronPtr& pMB)
+	void Init(MEPP_Polyhedron*& pMA, MEPP_Polyhedron*& pMB)
 	{
 		m_pA = pMA;
 		m_pB = pMB;
@@ -2277,9 +2302,9 @@ private:
 	/*! \brief Boolean operation computed*/
 	Bool_Op m_BOOP;
 	/*! \brief The first input polyhedron*/
-	PolyhedronPtr m_pA;
+	MEPP_Polyhedron* m_pA;
 	/*! \brief The second input polyhedron*/
-	PolyhedronPtr m_pB;
+	MEPP_Polyhedron* m_pB;
 	/*! \brief The polyhedron builder*/
 	CPolyhedron_from_polygon_builder_3<HDS> ppbuilder;
 

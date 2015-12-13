@@ -56,8 +56,6 @@
 #include "node/discretenode.h"
 #include "cachemanager.h"
 
-#include "contrib/Boolean_operations.h"
-
 class NodeEvaluator : public NodeVisitor
 {
 	Q_DECLARE_TR_FUNCTIONS(NodeEvaluator)

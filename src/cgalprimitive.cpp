@@ -258,7 +258,7 @@ static MEPP_Polyhedron* boolOperation(CGALPrimitive* left,CGALPrimitive* right, 
 
 	t.start();
 	MEPP_Polyhedron* res=new MEPP_Polyhedron();
-	BoolPolyhedra<CGAL::Kernel3> operation(mp1,mp2,res,op);
+	BoolPolyhedra<CGAL::Kernel3,Enriched_items> operation(mp1,mp2,res,op);
 	std::cout << "Operation took: " << t.elapsed() << "ms" << std::endl;
 
 	return res;
