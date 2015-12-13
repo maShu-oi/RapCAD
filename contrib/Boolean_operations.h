@@ -94,60 +94,6 @@ struct Enriched_items : public CGAL::Polyhedron_items_3 {
 	};
 };
 
-template <class kernel, class items>
-class Enriched_polyhedron :
-	public CGAL::Polyhedron_3<kernel,items>
-{
-public:
-	typedef typename Enriched_polyhedron<kernel,items>::Facet_iterator Facet_iterator;
-	typedef typename Enriched_polyhedron<kernel,items>::Halfedge_handle Halfedge_handle;
-
-	void triangulate()
-	{
-		Facet_iterator f = this->facets_begin();
-		Facet_iterator f2 = this->facets_begin();
-		do { //for (; f != this->facets_end(); f++)
-			f = f2;
-			if(f == this->facets_end()) {
-				break;
-			}
-			f2++;
-
-			if(!(f->is_triangle())) {
-				int num = (int)(f->facet_degree() - 3);
-				Halfedge_handle h = f->halfedge();
-
-				h = this->make_hole(h);
-
-				Halfedge_handle g = h->next();
-				g = g->next();
-				Halfedge_handle new_he = this->add_facet_to_border(h, g);
-//				new_he->texture_coordinates(h->texture_coordinates(0),h->texture_coordinates(1));
-//				new_he->opposite()->texture_coordinates(g->texture_coordinates(0),g->texture_coordinates(1));
-				g=new_he;
-
-				num--;
-				while(num != 0) {
-					g = g->opposite();
-					g = g->next();
-					Halfedge_handle new_he = this->add_facet_to_border(h, g);
-//					new_he->texture_coordinates(h->texture_coordinates(0),h->texture_coordinates(1));
-//					new_he->opposite()->texture_coordinates(g->texture_coordinates(0),g->texture_coordinates(1));
-					g=new_he;
-
-					num--;
-				}
-
-				this->fill_hole(h);
-			}
-
-		} while(true);
-
-		//this->compute_normals();
-		//this->compute_type();
-	}
-};
-
 /*!
  * \def BOOLEAN_OPERATIONS_DEBUG
  * \brief Enables computation time measuring
@@ -841,7 +787,7 @@ class BoolPolyhedra
 	typedef typename Kernel::Point_3 Point_3;
 	typedef typename Kernel::Vector_3 Vector_3;
 
-	typedef Enriched_polyhedron<Kernel,Items> Polyhedron_3;
+	typedef CGAL::Polyhedron_3<Kernel,Items> Polyhedron_3;
 	typedef typename Polyhedron_3::Vertex Vertex;
 	typedef typename Polyhedron_3::Facet Facet;
 	typedef typename Polyhedron_3::HalfedgeDS HDS;
@@ -915,6 +861,50 @@ private:
 		InterId				Id;
 	};
 
+	void triangulate(Polyhedron_3* that)
+	{
+		Facet_iterator f = that->facets_begin();
+		Facet_iterator f2 = that->facets_begin();
+		do { //for (; f != that->facets_end(); f++)
+			f = f2;
+			if(f == that->facets_end()) {
+				break;
+			}
+			f2++;
+
+			if(!(f->is_triangle())) {
+				int num = (int)(f->facet_degree() - 3);
+				Halfedge_handle h = f->halfedge();
+
+				h = that->make_hole(h);
+
+				Halfedge_handle g = h->next();
+				g = g->next();
+				Halfedge_handle new_he = that->add_facet_to_border(h, g);
+	//				new_he->texture_coordinates(h->texture_coordinates(0),h->texture_coordinates(1));
+	//				new_he->opposite()->texture_coordinates(g->texture_coordinates(0),g->texture_coordinates(1));
+				g=new_he;
+
+				num--;
+				while(num != 0) {
+					g = g->opposite();
+					g = g->next();
+					Halfedge_handle new_he = that->add_facet_to_border(h, g);
+	//					new_he->texture_coordinates(h->texture_coordinates(0),h->texture_coordinates(1));
+	//					new_he->opposite()->texture_coordinates(g->texture_coordinates(0),g->texture_coordinates(1));
+					g=new_he;
+
+					num--;
+				}
+
+				that->fill_hole(h);
+			}
+
+		} while(true);
+
+		//that->compute_normals();
+		//that->compute_type();
+	}
 public:
 	/*! \brief Constructor.
 	 * \brief Computes a boolean operation
@@ -1013,8 +1003,8 @@ private:
 
 		//triangulation of the two input polyhedra
 		//this is necessary for the AABB-tree, and simplify the computation of the intersections
-		if(!m_pA->is_pure_triangle()) m_pA->triangulate();
-		if(!m_pB->is_pure_triangle()) m_pB->triangulate();
+		if(!m_pA->is_pure_triangle()) triangulate(m_pA);
+		if(!m_pB->is_pure_triangle()) triangulate(m_pB);
 
 		//initialize the tags
 		for(Vertex_iterator pVertex = m_pA->vertices_begin(); pVertex != m_pA->vertices_end(); ++pVertex) {
