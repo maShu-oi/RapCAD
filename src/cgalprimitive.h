@@ -85,7 +85,7 @@ private:
 	void init();
 	void buildPrimitive();
 	void buildMeppPrimitive();
-	MEPP_Polyhedron* boolOperation(CGALPrimitive*,CGALPrimitive*,Bool_Op);
+	MEPP_Polyhedron* boolOperation(CGALPrimitive*,Bool_Op);
 	CGAL::NefPolyhedron3* createPolyline(QVector<CGAL::Point3>);
 
 	QList<Primitive*> children;

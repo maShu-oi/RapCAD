@@ -242,21 +242,13 @@ void CGALPrimitive::buildMeppPrimitive()
 	polyhedron->delegate(b);
 }
 
-MEPP_Polyhedron* CGALPrimitive::boolOperation(CGALPrimitive* left,CGALPrimitive* right, Bool_Op op)
+MEPP_Polyhedron* CGALPrimitive::boolOperation(CGALPrimitive* that, Bool_Op op)
 {
 	QElapsedTimer t;
 
 	t.start();
-	left->buildMeppPrimitive();
-	std::cout << "Build left took: " << t.elapsed() << "ms" << std::endl;
-
-	t.start();
-	right->buildMeppPrimitive();
-	std::cout << "Build right took: " << t.elapsed() << "ms" << std::endl;
-
-	t.start();
 	MEPP_Polyhedron* res=new MEPP_Polyhedron();
-	BoolPolyhedra<CGAL::Kernel3,Enriched_items> operation(left->polyhedron,right->polyhedron,res,op);
+	BoolPolyhedra<CGAL::Kernel3,Enriched_items> operation(this->polyhedron,that->polyhedron,res,op);
 	std::cout << "Operation took: " << t.elapsed() << "ms" << std::endl;
 
 	return res;
@@ -269,7 +261,10 @@ Primitive* CGALPrimitive::join(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	polyhedron=boolOperation(this,that,UNION);
+	this->buildMeppPrimitive();
+	that->buildMeppPrimitive();
+
+	polyhedron=boolOperation(that,UNION);
 	this->appendChild(that);
 	return this;
 }
@@ -281,7 +276,10 @@ Primitive* CGALPrimitive::intersection(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	polyhedron=boolOperation(this,that,INTER);
+	this->buildMeppPrimitive();
+	that->buildMeppPrimitive();
+
+	polyhedron=boolOperation(that,INTER);
 	this->appendChild(that);
 	return this;
 }
@@ -293,7 +291,10 @@ Primitive* CGALPrimitive::difference(Primitive* pr)
 		pr->appendChild(this);
 		return pr;
 	}
-	polyhedron=boolOperation(this,that,MINUS);
+	this->buildMeppPrimitive();
+	that->buildMeppPrimitive();
+
+	polyhedron=boolOperation(that,MINUS);
 	this->appendChild(that);
 	return this;
 }
