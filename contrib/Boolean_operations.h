@@ -22,7 +22,6 @@
 #ifndef BOOLEAN_OPERATIONS_H
 #define BOOLEAN_OPERATIONS_H
 
-#include <CGAL/IO/Polyhedron_iostream.h>
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_traits.h>
@@ -152,10 +151,7 @@ public:
 	}
 };
 
-
-
 typedef Enriched_polyhedron<Enriched_kernel, Enriched_items>	MEPP_Polyhedron;
-typedef MEPP_Polyhedron::Facet_handle Facet_handle;
 
 /*!
  * \def BOOLEAN_OPERATIONS_DEBUG
@@ -801,29 +797,17 @@ private:
 #include "Time_measure.h"
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
-/*! \typedef AABB_Kernel
- * \brief Kernel used for the computations in a AABB-tree*/
-//typedef CGAL::Simple_cartesian<num_type>					AABB_Kernel;
-typedef CGAL::Simple_cartesian<double>					AABB_Kernel;
+
 
 /*! \class Enriched_Triangle
  * \brief An enriched triangle*/
-template <typename Kernel>
+template <typename Kernel,typename AABB_Kernel>
 class Enriched_Triangle : public AABB_Kernel::Triangle_3
 {
 public:
-	/*! \typedef Point_3
-	 * \brief 3d point
-	 */
-	typedef AABB_Kernel::Point_3				Point_3;
-	/*! \typedef FT
-	 * \brief number type used in the kernel
-	 */
-	typedef AABB_Kernel::FT						FT;
-	/*! \brief Constructor
-	 * \brief creates a triangle a little bigger
-	 * \param _f : handle of a triangular facet of a polyhedron
-	 */
+	typedef typename AABB_Kernel::Point_3 Point_3;
+	typedef typename CGAL::Polyhedron_3<Kernel,Enriched_items>::Facet_handle Facet_handle;
+
 	Enriched_Triangle(Facet_handle& _f)
 		: AABB_Kernel::Triangle_3(to_K(_f->facet_begin()->vertex()->point() + (_f->facet_begin()->vertex()->point() - _f->facet_begin()->next()->vertex()->point()) / 1000),
 								  to_K(_f->facet_begin()->next()->vertex()->point() + (_f->facet_begin()->next()->vertex()->point() - _f->facet_begin()->next()->next()->vertex()->point()) / 1000),
@@ -858,21 +842,11 @@ private:
 template <typename Kernel, typename Items>
 class BoolPolyhedra
 {
-
-/*! \typedef Triangle
- * \brief A triangle enriched with a facet handle*/
-typedef Enriched_Triangle<Enriched_kernel> Triangle;
-/*! \typedef AABB_Primitive
- * \brief A primitive for an AABB-tree*/
-typedef CGAL::AABB_triangle_primitive<AABB_Kernel,std::list<Triangle>::iterator>	AABB_Primitive;
-/*! \typedef AABB_Traits
- * \brief concept for AABB-tree*/
-typedef CGAL::AABB_traits<AABB_Kernel, AABB_Primitive>								AABB_Traits;
-/*! \typedef AABB_Tree
- * \brief AABB-tree*/
-typedef CGAL::AABB_tree<AABB_Traits>												AABB_Tree;
-
-
+	typedef CGAL::Simple_cartesian<double> AABB_Kernel;
+	typedef Enriched_Triangle<Enriched_kernel,AABB_Kernel> Triangle;
+	typedef CGAL::AABB_triangle_primitive<AABB_Kernel,std::list<Triangle>::iterator> AABB_Primitive;
+	typedef CGAL::AABB_traits<AABB_Kernel, AABB_Primitive> AABB_Traits;
+	typedef CGAL::AABB_tree<AABB_Traits> AABB_Tree;
 
 	typedef typename Kernel::FT	FT;
 	typedef typename Kernel::Point_3 Point_3;
@@ -887,6 +861,7 @@ typedef CGAL::AABB_tree<AABB_Traits>												AABB_Tree;
 	typedef typename Polyhedron_3::Facet_iterator Facet_iterator;
 
 	typedef typename Polyhedron_3::Halfedge_handle Halfedge_handle;
+	typedef typename Polyhedron_3::Facet_handle Facet_handle;
 
 	typedef typename Vertex::Halfedge_around_vertex_circulator Halfedge_around_vertex_circulator;
 	typedef typename Facet::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;

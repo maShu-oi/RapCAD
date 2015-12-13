@@ -29,6 +29,8 @@
 #include "cgalvolume.h"
 #include "primitive.h"
 
+#include "contrib/Boolean_operations.h"
+
 namespace CGAL
 {
 typedef Polyhedron_3<Kernel3> Polyhedron3;
@@ -77,7 +79,7 @@ public:
 	void discrete(int);
 	CGAL::Circle3 getRadius();
 	CGALVolume getVolume(bool);
-	void* polyhedron;
+	MEPP_Polyhedron* polyhedron;
 private:
 	void init();
 	void buildPrimitive();

@@ -12,7 +12,6 @@
 #include "rmath.h"
 
 #include "QElapsedTimer"
-#include "contrib/Boolean_operations.h"
 #include "contrib/Copy_polyhedron_to.h"
 
 CGAL::NefPolyhedron3* CGALPrimitive::singlePoint=NULL;
@@ -236,7 +235,7 @@ Primitive* CGALPrimitive::combine()
 static MEPP_Polyhedron* buildMeppPrimitive(CGALPrimitive* other)
 {
 	if(other->polyhedron)
-		return static_cast<MEPP_Polyhedron*>(other->polyhedron);
+		return other->polyhedron;
 
 	CGALBuilder<MEPP_Polyhedron> b(other);
 	MEPP_Polyhedron* p=new MEPP_Polyhedron();
@@ -396,7 +395,7 @@ const CGAL::NefPolyhedron3& CGALPrimitive::getNefPolyhedron()
 	if(nefPolyhedron)
 		return *nefPolyhedron;
 
-	MEPP_Polyhedron* res=static_cast<MEPP_Polyhedron*>(polyhedron);
+	MEPP_Polyhedron* res=polyhedron;
 
 	QElapsedTimer t;
 
