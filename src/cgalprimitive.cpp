@@ -232,32 +232,31 @@ Primitive* CGALPrimitive::combine()
 	return this;
 }
 
-static MEPP_Polyhedron* buildMeppPrimitive(CGALPrimitive* other)
+void CGALPrimitive::buildMeppPrimitive()
 {
-	if(other->polyhedron)
-		return other->polyhedron;
+	if(polyhedron)
+		return;
 
-	CGALBuilder<MEPP_Polyhedron> b(other);
-	MEPP_Polyhedron* p=new MEPP_Polyhedron();
-	p->delegate(b);
-	return p;
+	CGALBuilder<MEPP_Polyhedron> b(this);
+	polyhedron=new MEPP_Polyhedron();
+	polyhedron->delegate(b);
 }
 
-static MEPP_Polyhedron* boolOperation(CGALPrimitive* left,CGALPrimitive* right, Bool_Op op)
+MEPP_Polyhedron* CGALPrimitive::boolOperation(CGALPrimitive* left,CGALPrimitive* right, Bool_Op op)
 {
 	QElapsedTimer t;
 
 	t.start();
-	MEPP_Polyhedron* mp1=buildMeppPrimitive(left);
+	left->buildMeppPrimitive();
 	std::cout << "Build left took: " << t.elapsed() << "ms" << std::endl;
 
 	t.start();
-	MEPP_Polyhedron* mp2=buildMeppPrimitive(right);
+	right->buildMeppPrimitive();
 	std::cout << "Build right took: " << t.elapsed() << "ms" << std::endl;
 
 	t.start();
 	MEPP_Polyhedron* res=new MEPP_Polyhedron();
-	BoolPolyhedra<CGAL::Kernel3,Enriched_items> operation(mp1,mp2,res,op);
+	BoolPolyhedra<CGAL::Kernel3,Enriched_items> operation(left->polyhedron,right->polyhedron,res,op);
 	std::cout << "Operation took: " << t.elapsed() << "ms" << std::endl;
 
 	return res;

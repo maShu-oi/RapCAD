@@ -81,16 +81,18 @@ public:
 	void discrete(int);
 	CGAL::Circle3 getRadius();
 	CGALVolume getVolume(bool);
-	MEPP_Polyhedron* polyhedron;
 private:
 	void init();
 	void buildPrimitive();
-	CGAL::NefPolyhedron3* createPolyline(QVector<CGAL::Point3> pl);
+	void buildMeppPrimitive();
+	MEPP_Polyhedron* boolOperation(CGALPrimitive*,CGALPrimitive*,Bool_Op);
+	CGAL::NefPolyhedron3* createPolyline(QVector<CGAL::Point3>);
 
 	QList<Primitive*> children;
 	QList<CGAL::Point3> points;
 	QList<CGALPolygon*> polygons;
 	CGAL::NefPolyhedron3* nefPolyhedron;
+	MEPP_Polyhedron* polyhedron;
 	Primitive_t type;
 
 	/* Simple wrapper class to enable Primitive
