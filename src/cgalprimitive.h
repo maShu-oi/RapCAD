@@ -37,6 +37,8 @@ typedef Polyhedron_3<Kernel3> Polyhedron3;
 typedef Nef_polyhedron_3<Kernel3> NefPolyhedron3;
 }
 
+typedef Enriched_polyhedron<CGAL::Kernel3,Enriched_items> MEPP_Polyhedron;
+
 class CGALPrimitive : public Primitive
 {
 public:

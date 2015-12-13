@@ -28,9 +28,6 @@
 
 #include <CGAL/Polyhedron_3.h>
 
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-typedef CGAL::Exact_predicates_exact_constructions_kernel Enriched_kernel;
-
 typedef unsigned long Id;
 typedef Id VertexId;
 typedef Id HalfedgeId;
@@ -150,8 +147,6 @@ public:
 		//this->compute_type();
 	}
 };
-
-typedef Enriched_polyhedron<Enriched_kernel, Enriched_items>	MEPP_Polyhedron;
 
 /*!
  * \def BOOLEAN_OPERATIONS_DEBUG
@@ -801,12 +796,12 @@ private:
 
 /*! \class Enriched_Triangle
  * \brief An enriched triangle*/
-template <typename Kernel,typename AABB_Kernel>
+template <typename AABB_Kernel,typename Kernel,typename Items>
 class Enriched_Triangle : public AABB_Kernel::Triangle_3
 {
 public:
 	typedef typename AABB_Kernel::Point_3 Point_3;
-	typedef typename CGAL::Polyhedron_3<Kernel,Enriched_items>::Facet_handle Facet_handle;
+	typedef typename CGAL::Polyhedron_3<Kernel,Items>::Facet_handle Facet_handle;
 
 	Enriched_Triangle(Facet_handle& _f)
 		: AABB_Kernel::Triangle_3(to_K(_f->facet_begin()->vertex()->point() + (_f->facet_begin()->vertex()->point() - _f->facet_begin()->next()->vertex()->point()) / 1000),
@@ -842,17 +837,11 @@ private:
 template <typename Kernel, typename Items>
 class BoolPolyhedra
 {
-	typedef CGAL::Simple_cartesian<double> AABB_Kernel;
-	typedef Enriched_Triangle<Enriched_kernel,AABB_Kernel> Triangle;
-	typedef CGAL::AABB_triangle_primitive<AABB_Kernel,std::list<Triangle>::iterator> AABB_Primitive;
-	typedef CGAL::AABB_traits<AABB_Kernel, AABB_Primitive> AABB_Traits;
-	typedef CGAL::AABB_tree<AABB_Traits> AABB_Tree;
-
 	typedef typename Kernel::FT	FT;
 	typedef typename Kernel::Point_3 Point_3;
 	typedef typename Kernel::Vector_3 Vector_3;
 
-	typedef typename CGAL::Polyhedron_3<Kernel,Items> Polyhedron_3;
+	typedef Enriched_polyhedron<Kernel,Items> Polyhedron_3;
 	typedef typename Polyhedron_3::Vertex Vertex;
 	typedef typename Polyhedron_3::Facet Facet;
 	typedef typename Polyhedron_3::HalfedgeDS HDS;
@@ -865,6 +854,15 @@ class BoolPolyhedra
 
 	typedef typename Vertex::Halfedge_around_vertex_circulator Halfedge_around_vertex_circulator;
 	typedef typename Facet::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
+
+
+	typedef CGAL::Simple_cartesian<double> AABB_Kernel;
+	typedef Enriched_Triangle<AABB_Kernel,Kernel,Items> Triangle;
+	typedef typename std::list<Triangle>::iterator Tri_iterator;
+	typedef CGAL::AABB_triangle_primitive<AABB_Kernel,Tri_iterator> AABB_Primitive;
+	typedef CGAL::AABB_traits<AABB_Kernel, AABB_Primitive> AABB_Traits;
+	typedef CGAL::AABB_tree<AABB_Traits> AABB_Tree;
+	typedef typename AABB_Tree::Primitive_id Primitive_id;
 private:
 	/*! \struct Triangle_Cut
 	 * \brief A structure containing informations about an intersected facet*/
@@ -924,7 +922,7 @@ public:
 	 * \param pMB : The second polyhedron
 	 * \param pMout : The result polyhedron
 	 * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-	BoolPolyhedra(MEPP_Polyhedron*& pMA, MEPP_Polyhedron*& pMB, MEPP_Polyhedron*& pMout, Bool_Op BOOP) : m_BOOP(BOOP)
+	BoolPolyhedra(Polyhedron_3*& pMA, Polyhedron_3*& pMB, Polyhedron_3*& pMout, Bool_Op BOOP) : m_BOOP(BOOP)
 	{
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
@@ -1008,7 +1006,7 @@ private:
 	/*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
 	 * \param pMA : The first polyhedron
 	 * \param pMB : The second polyhedron*/
-	void Init(MEPP_Polyhedron*& pMA, MEPP_Polyhedron*& pMB)
+	void Init(Polyhedron_3*& pMA, Polyhedron_3*& pMB)
 	{
 		m_pA = pMA;
 		m_pB = pMB;
@@ -1043,7 +1041,7 @@ private:
 	{
 		//A AABB-tree is built on the facets of one of the polyhedra. A collision test is done with each facet of the other polyhedron.
 		Facet_iterator pFacet =	NULL;
-		std::list<AABB_Tree::Primitive_id> primitives;
+		std::list<Primitive_id> primitives;
 		std::list<Triangle> triangles;
 
 		HalfedgeId i = 0;
@@ -2275,9 +2273,9 @@ private:
 	/*! \brief Boolean operation computed*/
 	Bool_Op m_BOOP;
 	/*! \brief The first input polyhedron*/
-	MEPP_Polyhedron* m_pA;
+	Polyhedron_3* m_pA;
 	/*! \brief The second input polyhedron*/
-	MEPP_Polyhedron* m_pB;
+	Polyhedron_3* m_pB;
 	/*! \brief The polyhedron builder*/
 	CPolyhedron_from_polygon_builder_3<HDS> ppbuilder;
 
