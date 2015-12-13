@@ -32,8 +32,6 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 typedef CGAL::Exact_predicates_exact_constructions_kernel Enriched_kernel;
 
-using namespace std;
-
 typedef unsigned long Id;
 typedef Id VertexId;
 typedef Id HalfedgeId;
@@ -278,7 +276,7 @@ public:
 	 * \param T : The list of triangle to add. Each triangle is described as a list of three indices
 	 * \param he : First halfedge handle of the facet
 	 */
-	void add_triangle(vector<vector<unsigned long> >& T, Halfedge_handle& he)
+	void add_triangle(std::vector<std::vector<unsigned long> >& T, Halfedge_handle& he)
 	{
 		//For each triangle of the vector T...
 		for(unsigned int i = 0; i != T.size(); ++i) {
@@ -671,13 +669,13 @@ public:
 	 * \return The list of the triangles belonging to the result.
 	 * each triangle is defined by a list of three labels
 	 */
-	vector<vector<unsigned long> > get_triangles(bool inv_triangles, bool* IsExt)
+	std::vector<std::vector<unsigned long> > get_triangles(bool inv_triangles, bool* IsExt)
 	{
 		//init
 		IsExt[0] = false;
 		IsExt[1] = false;
 		IsExt[2] = false;
-		vector<vector<unsigned long> > tris;
+		std::vector<std::vector<unsigned long> > tris;
 		for(Face_iterator_tri fi = ct.faces_begin(); fi != ct.faces_end(); fi++)
 			fi->set_OK(false);
 
@@ -718,7 +716,7 @@ public:
 			sfh.pop();
 
 			if(f->get_Ext()) {
-				vector<unsigned long> tri;
+				std::vector<unsigned long> tri;
 				int i;
 				tri.push_back(f->vertex(0)->get_Label());
 
@@ -753,11 +751,11 @@ public:
 	 * \return The list of the triangles belonging to the result.
 	 * each triangle is defined by a list of three labels
 	 */
-	vector<vector<unsigned long> > get_all_triangles(bool inv_triangles)
+	std::vector<std::vector<unsigned long> > get_all_triangles(bool inv_triangles)
 	{
-		vector<vector<unsigned long> > tris;
+		std::vector<std::vector<unsigned long> > tris;
 		for(Face_iterator_tri f = ct.faces_begin(); f != ct.faces_end(); f++) {
-			vector<unsigned long> tri;
+			std::vector<unsigned long> tri;
 			tri.push_back(f->vertex(0)->get_Label());
 			if(inv_triangles) {
 				tri.push_back(f->vertex(2)->get_Label());
@@ -775,9 +773,9 @@ private:
 	/*! \brief The triangulation*/
 	Constrained_Delaunay_tri ct;
 	/*! \brief List of the id of the points added in the triangulation*/
-	vector<InterId> pts_point;
+	std::vector<InterId> pts_point;
 	/*! \brief List of the handles of the points added in the triangulation*/
-	vector<Vertex_handle_tri> pts_vertex;
+	std::vector<Vertex_handle_tri> pts_vertex;
 	/*! \brief Handle of the point corresponding to the first vertex of the facet*/
 	Vertex_handle_tri v1;
 	/*! \brief Handle of the point corresponding to the second vertex of the facet*/
@@ -1185,7 +1183,7 @@ private:
 				}
 				//get the triangles of the triangulation thay belong to the result
 				//and determine if the three neighboring facets belongs to the result (using IsExt[3])
-				vector<vector<unsigned long> > Tri_set = T.get_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false, IsExt);
+				std::vector<std::vector<unsigned long> > Tri_set = T.get_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false, IsExt);
 				//add these triangles to the result
 				ppbuilder.add_triangle(Tri_set, he);
 
@@ -1202,7 +1200,7 @@ private:
 	void PropagateFacets()
 	{
 		Facet_handle pFacet = NULL, f = NULL, nf = NULL;
-		stack<Facet_handle> tmpTriangles;
+		std::stack<Facet_handle> tmpTriangles;
 
 		//add to a stack the intersected facets that have been cut during CutIntersectedFacets
 		for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++) {
@@ -1675,7 +1673,7 @@ private:
 			std::vector<InterId> ptInter;
 			Get_Segment(inter, ptInter);
 			//and we build the opposite segment in ptInterInv
-			vector<InterId> ptInterInv;
+			std::vector<InterId> ptInterInv;
 			ptInterInv.push_back(ptInter[1]);
 			ptInterInv.push_back(ptInter[0]);
 
@@ -2204,7 +2202,7 @@ private:
 				T.add_new_pt(InterPts[*i], (unsigned long&)*i);     // MT: ajout cast
 			}
 			//get all the triangles of the triangulation
-			vector<vector<unsigned long> > Tri_set = T.get_all_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false);
+			std::vector<std::vector<unsigned long> > Tri_set = T.get_all_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false);
 			//add these triangles to the result
 			ppbuilder.add_triangle(Tri_set, he);
 		} else {
@@ -2311,11 +2309,11 @@ private:
 	/*! \brief Lists the couples of facets that intersect*/
 	std::map<FacetId, std::set<FacetId> > m_Couples;
 	/*! \brief Lists the exact intersection points computed*/
-	vector<Point_3> InterPts;
+	std::vector<Point_3> InterPts;
 	/*! \brief Informations about the intersected facets*/
-	vector<Triangle_Cut> Inter_tri;
+	std::vector<Triangle_Cut> Inter_tri;
 	/*! \brief Index to obtain the handle of a facet with its Id*/
-	vector<Facet_handle> Facet_Handle;
+	std::vector<Facet_handle> Facet_Handle;
 
 	/*! \brief the AABB-tree*/
 	AABB_Tree tree;
