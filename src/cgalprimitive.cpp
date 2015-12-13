@@ -374,7 +374,12 @@ void CGALPrimitive::transform(TransformMatrix* matrix)
 
 	if(nefPolyhedron) {
 		nefPolyhedron->transform(t);
-	} else {
+	} else if(polyhedron) {
+		MEPP_Polyhedron::Point_iterator it;
+		for(it=polyhedron->points_begin(); it!=polyhedron->points_end(); ++it) {
+			*it = it->transform(t);
+		}
+	} else	{
 		QList<CGAL::Point3> nps;
 		foreach(CGAL::Point3 pt, points)
 			nps.append(pt.transform(t));
