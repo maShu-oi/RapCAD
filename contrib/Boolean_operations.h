@@ -98,15 +98,7 @@ struct Enriched_items : public CGAL::Polyhedron_items_3 {
  * \def BOOLEAN_OPERATIONS_DEBUG
  * \brief Enables computation time measuring
  */
-
 //#define BOOLEAN_OPERATIONS_DEBUG
-
-/*!
- * \enum Bool_Op
- * \brief The three Boolean operations
- */
-enum Bool_Op {UNION, INTER, MINUS};
-
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
 
@@ -906,15 +898,41 @@ private:
 		//that->compute_type();
 	}
 public:
-	/*! \brief Constructor.
-	 * \brief Computes a boolean operation
+	/*!
+	 * \enum Bool_Op
+	 * \brief The three Boolean operations
+	 */
+	enum Bool_Op {UNION, INTER, MINUS};
+
+	Polyhedron_3* join(Polyhedron_3*& pMA, Polyhedron_3*& pMB)
+	{
+		Polyhedron_3* res=new Polyhedron_3();
+		op(pMA,pMB,res,UNION);
+		return res;
+	}
+
+	Polyhedron_3* difference(Polyhedron_3*& pMA, Polyhedron_3*& pMB)
+	{
+		Polyhedron_3* res=new Polyhedron_3();
+		op(pMA,pMB,res,MINUS);
+		return res;
+	}
+
+	Polyhedron_3* intersection(Polyhedron_3*& pMA, Polyhedron_3*& pMB)
+	{
+		Polyhedron_3* res=new Polyhedron_3();
+		op(pMA,pMB,res,INTER);
+		return res;
+	}
+
+	/*! \brief Computes a boolean operation
 	 * \param pMA : The first polyhedron
 	 * \param pMB : The second polyhedron
 	 * \param pMout : The result polyhedron
 	 * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-	BoolPolyhedra(Polyhedron_3*& pMA, Polyhedron_3*& pMB, Polyhedron_3*& pMout, Bool_Op BOOP) : m_BOOP(BOOP)
+	void op(Polyhedron_3*& pMA, Polyhedron_3*& pMB, Polyhedron_3*& pMout, Bool_Op BOOP)
 	{
-
+		m_BOOP = BOOP;
 #ifdef BOOLEAN_OPERATIONS_DEBUG
 		std::ofstream ofstrMA("input_A_boolsum.off");
 		ofstrMA << *pMA;

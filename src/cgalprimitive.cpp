@@ -242,18 +242,6 @@ void CGALPrimitive::buildMeppPrimitive()
 	polyhedron->delegate(b);
 }
 
-MEPP_Polyhedron* CGALPrimitive::boolOperation(CGALPrimitive* that, Bool_Op op)
-{
-	QElapsedTimer t;
-
-	t.start();
-	MEPP_Polyhedron* res=new MEPP_Polyhedron();
-	BoolPolyhedra<CGAL::Kernel3,Enriched_items> operation(this->polyhedron,that->polyhedron,res,op);
-	std::cout << "Operation took: " << t.elapsed() << "ms" << std::endl;
-
-	return res;
-}
-
 Primitive* CGALPrimitive::join(Primitive* pr)
 {
 	CGALPrimitive* that=dynamic_cast<CGALPrimitive*>(pr);
@@ -264,7 +252,8 @@ Primitive* CGALPrimitive::join(Primitive* pr)
 	this->buildMeppPrimitive();
 	that->buildMeppPrimitive();
 
-	polyhedron=boolOperation(that,UNION);
+	BoolPolyhedra<CGAL::Kernel3,Enriched_items> bp;
+	polyhedron=bp.join(this->polyhedron,that->polyhedron);
 	this->appendChild(that);
 	return this;
 }
@@ -279,7 +268,8 @@ Primitive* CGALPrimitive::intersection(Primitive* pr)
 	this->buildMeppPrimitive();
 	that->buildMeppPrimitive();
 
-	polyhedron=boolOperation(that,INTER);
+	BoolPolyhedra<CGAL::Kernel3,Enriched_items> bp;
+	polyhedron=bp.intersection(this->polyhedron,that->polyhedron);
 	this->appendChild(that);
 	return this;
 }
@@ -294,7 +284,8 @@ Primitive* CGALPrimitive::difference(Primitive* pr)
 	this->buildMeppPrimitive();
 	that->buildMeppPrimitive();
 
-	polyhedron=boolOperation(that,MINUS);
+	BoolPolyhedra<CGAL::Kernel3,Enriched_items> bp;
+	polyhedron=bp.difference(this->polyhedron,that->polyhedron);
 	this->appendChild(that);
 	return this;
 }
