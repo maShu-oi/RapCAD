@@ -31,10 +31,8 @@ public:
 	void setType(Primitive_t) { }
 	Primitive* buildPrimitive() { return this; }
 	bool overlaps(Primitive*) { return false; }
-	void add(Primitive*,bool);
 	Primitive* group(Primitive*);
 	Primitive* join(Primitive*);
-	Primitive* combine();
 	Primitive* intersection(Primitive*);
 	Primitive* difference(Primitive*);
 	Primitive* symmetric_difference(Primitive*);

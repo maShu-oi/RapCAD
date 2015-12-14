@@ -315,10 +315,10 @@ void NodeEvaluator::evaluate(Node* op,Operation_e type)
 		} else {
 			switch(type) {
 			case Group:
-				first->add(result,false);
+				first=first->group(result);
 				break;
 			case Union:
-				first->add(result,true);
+				first=first->join(result);
 				break;
 			case Difference:
 				first=first->difference(result);
@@ -336,10 +336,7 @@ void NodeEvaluator::evaluate(Node* op,Operation_e type)
 		}
 	}
 
-	if(first)
-		result=first->combine();
-	else
-		result=first;
+	result=first;
 
 }
 

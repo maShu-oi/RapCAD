@@ -39,11 +39,6 @@ void Polyhedron::createVertex(Point p)
 	points.append(p);
 }
 
-void Polyhedron::add(Primitive* p, bool)
-{
-	this->appendChild(p);
-}
-
 Primitive* Polyhedron::group(Primitive* p)
 {
 	return join(p);
@@ -52,11 +47,6 @@ Primitive* Polyhedron::group(Primitive* p)
 Primitive* Polyhedron::join(Primitive* p)
 {
 	this->appendChild(p);
-	return this;
-}
-
-Primitive* Polyhedron::combine()
-{
 	return this;
 }
 

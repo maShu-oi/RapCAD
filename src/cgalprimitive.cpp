@@ -18,7 +18,6 @@ CGAL::NefPolyhedron3* CGALPrimitive::singlePoint=NULL;
 
 void CGALPrimitive::init()
 {
-	nUnion=NULL;
 	type=Primitive::Volume;
 	polyhedron=NULL;
 }
@@ -212,24 +211,6 @@ CGAL::Cuboid3 CGALPrimitive::getBounds()
 	}
 
 	return CGAL::bounding_box(points.begin(),points.end());
-}
-
-void CGALPrimitive::add(Primitive* pr,bool force)
-{
-	if(!nUnion) {
-		nUnion=new CGAL::Nef_nary_union_3<Unionable>();
-		nUnion->add_polyhedron(Unionable(this,force));
-	}
-	nUnion->add_polyhedron(Unionable(pr,force));
-}
-
-Primitive* CGALPrimitive::combine()
-{
-	if(nUnion) {
-		Unionable un=nUnion->get_union();
-		return un.primitive;
-	}
-	return this;
 }
 
 void CGALPrimitive::buildMeppPrimitive()
@@ -514,13 +495,4 @@ void CGALPrimitive::discrete(int places)
 	}
 }
 
-CGALPrimitive::Unionable& CGALPrimitive::Unionable::operator+(Unionable& other)
-{
-	if(force||primitive->overlaps(other.primitive))
-		primitive=primitive->join(other.primitive);
-	else
-		primitive=primitive->group(other.primitive);
-
-	return *this;
-}
 #endif
