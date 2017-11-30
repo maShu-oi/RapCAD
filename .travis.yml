@@ -1,10 +1,8 @@
 sudo: false
-branches:
-  except:
-    - MEPP-integration
 language: cpp
 compiler:
   - gcc
+
 addons:
   apt:
     packages:
@@ -16,13 +14,11 @@ addons:
       - bison
       - flex
       - libreadline-dev
-    sources:
-      - ubuntu-sdk-team
+
 script:
-  - qmake -qt5
+  - qmake
   - make -j4
-  - pushd test
-  - ../rapcad -t
+
 notifications:
   irc:
     channels:
