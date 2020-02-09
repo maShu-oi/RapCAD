@@ -63,7 +63,7 @@ int CodeEditor::lineNumberAreaWidth()
 void CodeEditor::highlightCurrentLine()
 {
 	QList<QTextEdit::ExtraSelection> extraSelections;
-	if (highlightLine&&!isReadOnly()) {
+	if(highlightLine&&!isReadOnly()) {
 		QTextEdit::ExtraSelection selection;
 		selection.format.setBackground(QColor(240,240,240));
 		selection.format.setProperty(QTextFormat::FullWidthSelection, true);
@@ -154,7 +154,7 @@ void CodeEditor::preferencesUpdated()
 	highlightCurrentLine();
 }
 
-void CodeEditor::setModuleNames(const QHash<QString,Module*> &names)
+void CodeEditor::setModuleNames(const QHash<QString,Module*>& names)
 {
 	moduleNames = names;
 	highlighter->setModuleNames(names);
@@ -176,6 +176,43 @@ void CodeEditor::updateLineNumberArea(const QRect& rect, int dy)
 		updateLineNumberAreaWidth(0);
 }
 
+void CodeEditor::keyPressEvent(QKeyEvent* e)
+{
+	if(e->key()==Qt::Key_Tab&&textCursor().hasSelection())
+		return increaseSelectionIndent();
+
+	return QPlainTextEdit::keyPressEvent(e);
+}
+
+void CodeEditor::increaseSelectionIndent()
+{
+	QTextCursor cursor=textCursor();
+
+	if(!cursor.hasSelection())
+		return;
+
+	int start=cursor.anchor();
+	int finish=cursor.position();
+
+	if(start>finish)
+		std::swap(start,finish);
+
+	cursor.setPosition(finish);
+	int last=cursor.blockNumber();
+
+	cursor.setPosition(start);
+	int first=cursor.blockNumber();
+
+	int blockCount=last-first;
+	cursor.beginEditBlock();
+	for(auto i=0; i<=blockCount; ++i) {
+		cursor.movePosition(QTextCursor::StartOfBlock);
+		cursor.insertText("\t");
+		cursor.movePosition(QTextCursor::NextBlock);
+	}
+	cursor.endEditBlock();
+}
+
 void CodeEditor::resizeEvent(QResizeEvent* e)
 {
 	QPlainTextEdit::resizeEvent(e);
@@ -189,20 +226,19 @@ bool CodeEditor::event(QEvent* event)
 	if(!showTooltips)
 		return QPlainTextEdit::event(event);
 
-	if (event->type() == QEvent::ToolTip)
-	{
+	if(event->type()==QEvent::ToolTip) {
 		QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
 		QTextCursor cursor = cursorForPosition(helpEvent->pos());
 		cursor.select(QTextCursor::WordUnderCursor);
 		Module* m = moduleNames.value(cursor.selectedText());
-		if (m) {
+		if(m) {
 			QRect r=cursorRect(cursor);
 			QToolTip::showText(mapToGlobal(QPoint(r.x(),r.y())), m->getDescription());
 		} else {
 			QToolTip::hideText();
 		}
 		return true;
-	} else if (event->type() == QEvent::KeyPress) {
+	} else if(event->type()==QEvent::KeyPress) {
 		QToolTip::hideText();
 	}
 	return QPlainTextEdit::event(event);
@@ -216,8 +252,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent* event)
 	QTextBlock block = firstVisibleBlock();
 	int blockNumber = block.blockNumber();
 	int currentBlock = textCursor().block().blockNumber();
-	int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
-	int bottom = top + (int) blockBoundingRect(block).height();
+	int top = int(blockBoundingGeometry(block).translated(contentOffset()).top());
+	int bottom = top + int(blockBoundingRect(block).height());
 
 	bool readOnly=isReadOnly();
 	while(block.isValid() && top <= event->rect().bottom()) {
@@ -233,7 +269,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent* event)
 
 		block = block.next();
 		top = bottom;
-		bottom = top + (int) blockBoundingRect(block).height();
+		bottom = top + int(blockBoundingRect(block).height());
 		++blockNumber;
 	}
 }

@@ -284,6 +284,8 @@
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
    <addaction name="separator"/>
+   <addaction name="actionIncreaseIndent"/>
+   <addaction name="separator"/>
    <addaction name="actionCut"/>
    <addaction name="actionCopy"/>
    <addaction name="actionPaste"/>
@@ -856,6 +858,17 @@
   <action name="actionExportSVG">
    <property name="text">
     <string>SVG (2D)</string>
+   </property>
+  </action>
+  <action name="actionIncreaseIndent">
+   <property name="icon">
+    <iconset theme="format-indent-more"/>
+   </property>
+   <property name="text">
+    <string>Increase Indent</string>
+   </property>
+   <property name="toolTip">
+    <string>Increase the indentation of the selected text</string>
    </property>
   </action>
  </widget>

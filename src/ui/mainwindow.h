@@ -65,6 +65,7 @@ private slots:
 	void setTabTitle(const QString&);
 	void undo();
 	void redo();
+	void increaseSelectionIndent();
 	void cut();
 	void copy();
 	void paste();
