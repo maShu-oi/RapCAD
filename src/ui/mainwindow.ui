@@ -284,6 +284,7 @@
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
    <addaction name="separator"/>
+   <addaction name="actionDecreaseIndent"/>
    <addaction name="actionIncreaseIndent"/>
    <addaction name="separator"/>
    <addaction name="actionCut"/>
@@ -869,6 +870,17 @@
    </property>
    <property name="toolTip">
     <string>Increase the indentation of the selected text</string>
+   </property>
+  </action>
+  <action name="actionDecreaseIndent">
+   <property name="icon">
+    <iconset theme="format-indent-less"/>
+   </property>
+   <property name="text">
+    <string>Decrease Indent</string>
+   </property>
+   <property name="toolTip">
+    <string>Decrease the indentation of the selected text</string>
    </property>
   </action>
  </widget>

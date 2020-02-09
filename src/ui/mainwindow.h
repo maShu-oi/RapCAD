@@ -66,6 +66,7 @@ private slots:
 	void undo();
 	void redo();
 	void increaseSelectionIndent();
+	void decreaseSelectionIndent();
 	void cut();
 	void copy();
 	void paste();

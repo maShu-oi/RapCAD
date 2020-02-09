@@ -25,6 +25,8 @@
 #include "linenumberarea.h"
 #include "preferences.h"
 
+static const char* indent="\t";
+
 CodeEditor::CodeEditor(QWidget* parent) :
 	QPlainTextEdit(parent),
 	showTooltips(true),
@@ -178,36 +180,62 @@ void CodeEditor::updateLineNumberArea(const QRect& rect, int dy)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
-	if(e->key()==Qt::Key_Tab&&textCursor().hasSelection())
+	if(e->key()==Qt::Key_Tab) {
+		if(e->modifiers()==Qt::ControlModifier)
+			return decreaseSelectionIndent();
+
 		return increaseSelectionIndent();
+	}
 
 	return QPlainTextEdit::keyPressEvent(e);
 }
 
-void CodeEditor::increaseSelectionIndent()
+int CodeEditor::getSelectionBlockCount()
 {
 	QTextCursor cursor=textCursor();
-
 	if(!cursor.hasSelection())
-		return;
+		return 0;
 
-	int start=cursor.anchor();
-	int finish=cursor.position();
+	int finish=cursor.blockNumber();
+	cursor.setPosition(cursor.anchor());
+	int start=cursor.blockNumber();
 
-	if(start>finish)
-		std::swap(start,finish);
+	return std::abs(finish-start);
+}
 
-	cursor.setPosition(finish);
-	int last=cursor.blockNumber();
+void CodeEditor::increaseSelectionIndent()
+{
+	int blockCount=getSelectionBlockCount();
 
-	cursor.setPosition(start);
-	int first=cursor.blockNumber();
+	QTextCursor cursor=textCursor();
+	cursor.setPosition(std::min(cursor.anchor(),cursor.position()));
 
-	int blockCount=last-first;
 	cursor.beginEditBlock();
 	for(auto i=0; i<=blockCount; ++i) {
 		cursor.movePosition(QTextCursor::StartOfBlock);
-		cursor.insertText("\t");
+		QTextCursor current(cursor);
+		current.movePosition(QTextCursor::EndOfBlock,QTextCursor::KeepAnchor);
+		if(current.hasSelection())
+			cursor.insertText(indent);
+		cursor.movePosition(QTextCursor::NextBlock);
+	}
+	cursor.endEditBlock();
+}
+
+void CodeEditor::decreaseSelectionIndent()
+{
+	int blockCount=getSelectionBlockCount();
+
+	QTextCursor cursor=textCursor();
+	cursor.setPosition(std::min(cursor.anchor(),cursor.position()));
+
+	cursor.beginEditBlock();
+	for(auto i=0; i<=blockCount; ++i) {
+		cursor.movePosition(QTextCursor::StartOfBlock);
+		QTextCursor current(cursor);
+		current.movePosition(QTextCursor::NextCharacter,QTextCursor::KeepAnchor);
+		if(current.selectedText()==indent)
+			current.removeSelectedText();
 		cursor.movePosition(QTextCursor::NextBlock);
 	}
 	cursor.endEditBlock();
